@@ -34,14 +34,14 @@
 
 .cizgi {
     flex: 1;
-    height: 3px;
-    background: rgba(0, 0, 0, 0.75);
+    height: 5px;
+    background: rgba(0, 0, 0, 0.645);
 }
 
 .line-btn {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    border-radius: 150%;
     border: none;
     background: #e87599;
     cursor: pointer;
@@ -49,8 +49,7 @@
 }
 
 .line-btn:hover {
-    background: #ff4f85;
-    transform: scale(1.2);
+    background: #f56893;
 }
 
         /* SOL PANEL */
@@ -347,24 +346,31 @@
             <button id="hesaplaBtn">
                 tahmin
             </button>
-    <div class="line-wrapper" style="width:200px; left:70px; top:600px; transform:rotate(0deg);">
-        <button class="line-btn start"></button>
+    <div class="line-wrapper" style="width:250px; left:45px; top:600px; transform:rotate(0deg);">
+        <button class="line-btn start">B</button>
         <div class="cizgi"></div>
-        <button class="line-btn end"></button>
+        <button class="line-btn end">D</button>
     </div>
 
-    <div class="line-wrapper" style="width:150px; left:95px; top:600px; transform:rotate(45deg);">
-        <button class="line-btn start"></button>
+    <div class="line-wrapper" style="width:200px; left:70px; top:600px; transform:rotate(45deg);">
+        <button class="line-btn start" style="transform:rotate(315deg)">KB</button>
         <div class="cizgi"></div>
-        <button class="line-btn end"></button>
+        <button class="line-btn end" style="transform:rotate(315deg)">GD</button>
     </div>
 
-    <div class="line-wrapper" style="width:200px; left:70px; top:600px; transform:rotate(90deg);">
-        <button class="line-btn start"></button>
+    <div class="line-wrapper" style="width:250px; left:45px; top:600px; transform:rotate(90deg);">
+        <button class="line-btn start" style="transform:rotate(270deg)">K</button>
         <div class="cizgi"></div>
-        <button class="line-btn end"></button>
+        <button class="line-btn end" style="transform:rotate(270deg)">G</button>
     </div>
-       </div>
+
+    <div class="line-wrapper" style="width:200px; left:70px; top:600px; transform:rotate(135deg);">
+        <button class="line-btn start" style="transform:rotate(225deg)">KD</button>
+        <div class="cizgi"></div>
+        <button class="line-btn end" style="transform:rotate(225deg)">GB</button>
+    </div>
+
+    </div>
 
         <div class="right-panel">
             <div class="frame-wrapper">
@@ -381,6 +387,7 @@
 
     <script>
         // --- BU KISIM main.js İÇERİĞİ OLACAK ---
+        
         const canvas = document.getElementById("mainCanvas");
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         const imageInput = document.getElementById("imageInput");
