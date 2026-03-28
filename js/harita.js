@@ -2,7 +2,7 @@
 
 let grid = []; 
 let rows, cols;
-const cellSize = 5; 
+const cellSize = 10; 
 let originalImageData = null;
 
 const renkSistemi = {
@@ -38,7 +38,7 @@ function haritayiAnalizEt() {
 
     const imageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height).data;
 
-    // --- 1. ADIM: İLK RENK ANALİZİ ---
+    // --- 1. ADIM: İLK RENK ANALİZİ (GÜNCELLENMİŞ VE FİLTRELİ) ---
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
             const pxIndex = ((y * cellSize) * mCanvas.width + (x * cellSize)) * 4;
@@ -46,24 +46,73 @@ function haritayiAnalizEt() {
             const g = imageData[pxIndex + 1];
             const b = imageData[pxIndex + 2];
 
-            // Yangın (1)
+            // 1. Yangın (1)
             if (r > 180 && g < 100 && b < 100) {
                 grid[y][x] = 1;
             }
-            // Duman (2)
-            else if (r >= 0 && r <= 60 && g >= 0 && g <= 60 && b >= 0 && b <= 60 && r > g + 10 && r > b + 10) {
-                grid[y][x] = 2; // Gri (İsli Duman)
+            // 2. Duman (2) - Senin verdiğin 5 özel RGB kodunu baz alan genişletilmiş koridor
+            else if (r >= 25 && r <= 120 && g >= 25 && g <= 120 && b >= 30 && b <= 130 && Math.abs(r - g) <= 15) {
+                grid[y][x] = 2; 
             }
-            // Yol (3)
+            // 3. Yol (3)
             else if (r > 150 && g > 110 && b > 60 && r > g && g > b) {
                 grid[y][x] = 3;
             }
-            // Orman (0)
-            else if (r >= 20 && r <= 90 && g >= 30 && g <= 110 && b >= 10 && b <= 60 && g >= r && g >= b) {
+            // 4. Orman (0)
+            else {
                 grid[y][x] = 0;
             }
         }
     }
+
+    // --- 1.5 ADIM: KONUMSAL TEMİZLİK (SADECE ALEV YAKININI TUT) ---
+    let tempGrid = JSON.parse(JSON.stringify(grid));
+    let dumanMenzili = 12; // Alevden en fazla 12 birim uzaklık (Sağdaki toprağı silmek için)
+
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (grid[y][x] === 2) { 
+                let yakinindaAlevVar = false;
+                for (let dy = -dumanMenzili; dy <= dumanMenzili; dy++) {
+                    for (let dx = -dumanMenzili; dx <= dumanMenzili; dx++) {
+                        let ny = y + dy, nx = x + dx;
+                        if (ny >= 0 && ny < rows && nx >= 0 && nx < cols && grid[ny][nx] === 1) {
+                            yakinindaAlevVar = true; break;
+                        }
+                    }
+                    if (yakinindaAlevVar) break;
+                }
+                if (!yakinindaAlevVar) tempGrid[y][x] = 0; // Uzaktaki "sahte" dumanları ormana çevir
+            }
+        }
+    }
+    grid = tempGrid;
+
+    // --- YENİ ADIM: UZAKTAKİ DUMANLARI SİL (Sadece alev yakını kalsın) ---
+    let cleanGrid = JSON.parse(JSON.stringify(grid));
+    let mesafeLimit = 10; // Alevden en fazla kaç birim uzaktaki dumanı kabul edelim?
+
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (grid[y][x] === 2) { // Eğer hücre dumansa
+                let alevVarMi = false;
+                // Çevresindeki 10 birimlik alanı tara
+                for (let dy = -mesafeLimit; dy <= mesafeLimit; dy++) {
+                    for (let dx = -mesafeLimit; dx <= mesafeLimit; dx++) {
+                        let ny = y + dy, nx = x + dx;
+                        if (ny >= 0 && ny < rows && nx >= 0 && nx < cols && grid[ny][nx] === 1) {
+                            alevVarMi = true; break;
+                        }
+                    }
+                    if (alevVarMi) break;
+                }
+                if (!alevVarMi) cleanGrid[y][x] = 0; // Alevden uzaksa sil (Orman yap)
+            }
+        }
+    }
+    grid = cleanGrid;
+
+    // --- 2. ADIM: YANGIN GENİŞLETME (Senin mevcut kodun buradan devam etsin) ---
 
     // --- 2. ADIM: YANGIN GENİŞLETME (Güvenlik Koridoru - 16 Komşuluk/2 Birim) ---
     let fireTempGrid = JSON.parse(JSON.stringify(grid));
