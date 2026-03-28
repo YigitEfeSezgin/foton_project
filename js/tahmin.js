@@ -1,78 +1,65 @@
-// tahmin.js - Senin bölümün
+// tahmin.js - Optimize Edilmiş Versiyon (Hızlı Yayılım)
 
 function yanginYayiliminiHesapla() {
-    // 1. KONTROL: harita.js'deki global değişkenlere erişim var mı?
-    // 'grid', 'rows' ve 'cols' harita.js'de tanımlı olmalı.
-    if (typeof grid === 'undefined' || grid.length === 0) {
-        console.error("Hata: Grid verisi bulunamadı. Önce Analiz yapmalısınız.");
-        return;
-    }
+    if (typeof grid === 'undefined' || grid.length === 0) return;
 
     const mCanvas = document.getElementById("mainCanvas");
     const mCtx = mCanvas.getContext("2d");
     
-    // Mevcut grid'in kopyasını oluştur (Sadece 1 birim yayılma için şart)
+    // 1. ADIM: Sadece yanan hücrelerin listesini çıkar (Performans anahtarı)
+    let yananlar = [];
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (grid[y][x] === 1) {
+                yananlar.push({y, x});
+            }
+        }
+    }
+
     let yeniGrid = JSON.parse(JSON.stringify(grid));
 
-    // --- 4 BİRİM YOL KURALI ---
+    // Yol bariyeri kontrolü (4 birim kuralı)
     function yolBariyeriVarMi(y, x, dy, dx) {
-        let yolSayaci = 0;
         for (let i = 1; i <= 4; i++) {
             let ny = y + (dy * i);
             let nx = x + (dx * i);
-            
             if (ny >= 0 && ny < rows && nx >= 0 && nx < cols) {
-                // harita.js'de yol değeri 3 olarak tanımlanmış
-                if (grid[ny][nx] === 3) {
-                    yolSayaci++;
-                } else {
-                    break; 
-                }
-            }
+                if (grid[ny][nx] !== 3) return false; 
+            } else return false;
         }
-        return yolSayaci >= 4; // Eğer 4 veya daha fazla yol varsa TRUE döner
+        return true; 
     }
 
-    // Grid taraması
-    for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-            if (grid[y][x] === 1) { // Sadece yangın (1) olan yerlere bak
-                for (let dy = -2; dy <= 2; dy++) {
-                    for (let dx = -2; dx <= 2; dx++) {
-                        if (dy === 0 && dx === 0) continue;
+    // 2. ADIM: Sadece yanan hücrelerin etrafını tara (Tüm haritayı değil!)
+    yananlar.forEach(hucre => {
+        // 2 birim yayılım için -2'den +2'ye
+        for (let dy = -2; dy <= 2; dy++) {
+            for (let dx = -2; dx <= 2; dx++) {
+                if (dy === 0 && dx === 0) continue;
 
-                        let ny = y + dy;
-                        let nx = x + dx;
+                let ny = hucre.y + dy;
+                let nx = hucre.x + dx;
 
-                        if (ny >= 0 && ny < rows && nx >= 0 && nx < cols) {
-                            // Eğer hedef yol (3) değilse ve bariyer yoksa
-                            if (grid[ny][nx] !== 3 && grid[ny][nx] !== 1) {
-                                if (!yolBariyeriVarMi(y, x, dy, dx)) {
-                                    yeniGrid[ny][nx] = 1;
-                                }
-                            }
+                if (ny >= 0 && ny < rows && nx >= 0 && nx < cols) {
+                    // Eğer hedef yanabilir durumdaysa
+                    if (grid[ny][nx] !== 3 && grid[ny][nx] !== 1) {
+                        
+                        // Yön tespiti (Bariyer kontrolü için)
+                        let yonY = dy === 0 ? 0 : dy / Math.abs(dy);
+                        let yonX = dx === 0 ? 0 : dx / Math.abs(dx);
+
+                        if (!yolBariyeriVarMi(hucre.y, hucre.x, yonY, yonX)) {
+                            yeniGrid[ny][nx] = 1;
                         }
                     }
                 }
             }
         }
-    }
+    });
 
-    // Global grid'i güncelle
     grid = yeniGrid;
 
-    // harita.js içindeki çizim fonksiyonunu tetikle
     if (typeof matrisiEkranaCiz === "function") {
         matrisiEkranaCiz(mCtx);
-        console.log("Ekran güncellendi.");
-    } else {
-        console.error("Hata: matrisiEkranaCiz fonksiyonu bulunamadı!");
     }
 }
-
-// Buton ID'si HTML'de neyse onu buraya yazmalısın (Örn: tahminBtn)
-document.addEventListener("click", function(e) {
-    if (e.target && (e.target.id === 'tahminBtn' || e.target.innerText === 'TAHMİN')) {
-        yanginYayiliminiHesapla();
-    }
-});
