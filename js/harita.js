@@ -3,6 +3,7 @@
 let grid = []; // Sayısal harita (Örn: 3, 2, 0, 1)
 let rows, cols;
 const cellSize = 15; // Her 5x5 piksellik alan 1 hücredir
+let originalImageData = null;
 
 const renkSistemi = {
     3: "rgba(0, 100, 255, 0.4)",  // YOL: Mavi
@@ -18,6 +19,7 @@ const costMap = {
 };
 
 function haritayiAnalizEt() {
+    
     // Arayüzdeki canvas'ı kontrol et
     const mCanvas = document.getElementById("mainCanvas");
     if (!mCanvas) return;
@@ -28,6 +30,15 @@ function haritayiAnalizEt() {
     
     // Matrisi oluştur
     grid = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+    // --- YENİ MANTIK: TEMİZ RESMİ KORUMA ---
+    if (!originalImageData) {
+        // İlk tıklamada: Resmin boyanmamış, temiz halini hafızaya al
+        originalImageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height);
+    } else {
+        // İkinci ve sonraki tıklamalarda: Önce eski boyaları silip temiz resmi ekrana bas
+        mCtx.putImageData(originalImageData, 0, 0);
+    }
 
     const imageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height).data;
 
@@ -110,8 +121,8 @@ function matrisiEkranaCiz(ctx) {
 const inputElement = document.getElementById("imageInput");
 if (inputElement) {
     inputElement.addEventListener("change", function() {
-        // main.js'nin resmi çizmesi için kısa bir bekleme
-        setTimeout(haritayiAnalizEt, 1000);
+        originalImageData = null;
+        document.getElementById("status").innerText = "Fotoğraf yüklendi. Analiz için butona basın.";
     });
 }
 
