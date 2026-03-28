@@ -5,20 +5,19 @@ const imageInput = document.getElementById('imageInput');
 const status = document.getElementById('status');
 
 let img = new Image();
-let points = []; // Koordinatları tutan ana dizimiz
+let points = []; 
 
-// 1. Resim Yükleme İşlemi
+// 1. Resim Yükleme İşlemi (Aynı kaldı)
 imageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
             img.onload = () => {
-                // Canvas boyutlarını orijinal resme göre ayarla
                 canvas.width = img.width;
                 canvas.height = img.height;
                 canvas.style.display = "inline-block";
-                resetLogic(); // Her yeni resimde sistemi sıfırla
+                resetLogic(); 
             };
             img.src = event.target.result;
         };
@@ -26,82 +25,72 @@ imageInput.addEventListener('change', (e) => {
     }
 });
 
-// 2. Tıklama Döngüsü (3 Adımlı: Başlangıç -> Bitiş -> Sıfırla)
+// 2. Tıklama Döngüsü (Mantık güncellendi)
 canvas.addEventListener('click', (e) => {
     if (!img.src) return;
 
-    // Eğer zaten 2 nokta varsa, 3. tıklama her şeyi siler
+    // 3. Tıklama Kontrolü: Eğer dizide zaten 2 nokta varsa her şeyi temizle
     if (points.length === 2) {
         resetLogic();
         return;
     }
 
-    // Koordinat hesaplama (Resim ölçeklendirilmiş olsa bile doğru çalışır)
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX - rect.left) * (canvas.width / rect.width);
     const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
-    // Noktayı kaydet
     points.push({ 
         x: Math.round(x), 
-        y: Math.round(y),
-        label: points.length === 0 ? "Baslangic" : "Bitis"
+        y: Math.round(y)
     });
 
     draw();
     updateStatus();
 });
 
-// 3. Çizim Fonksiyonu
+// 3. Çizim Fonksiyonu (Boyut ve Renk Mantığı Güncellendi)
 function draw() {
-    // Önce resmi çizerek ekranı tazele
     ctx.drawImage(img, 0, 0);
 
     points.forEach((p, index) => {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 15, 0, Math.PI * 2);
         
-        // Renk Belirleme: 1. Nokta Yeşil, 2. Nokta Kırmızı
-        ctx.fillStyle = (index === 0) ? '#27ae60' : '#c0392b'; 
+        // --- BOYUT VE RENK AYARI ---
+        // 1. nokta (index 0): Yeşil ve Büyük (Yarıçap: 25)
+        // 2. nokta (index 1): Kırmızı ve Normal (Yarıçap: 15)
+        let radius = (index === 0) ? 25 : 15;
+        let color = (index === 0) ? '#27ae60' : '#c0392b';
+        
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
         ctx.fill();
         
         // Beyaz Kenarlık
         ctx.strokeStyle = 'white';
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 4;
         ctx.stroke();
         ctx.closePath();
         
-        // Nokta İçine Harf Yazma (B: Başlangıç, S: Son/Bitiş)
+        // Etiket Yazısı
         ctx.fillStyle = "white";
-        ctx.font = "bold 16px Arial";
+        ctx.font = `bold ${index === 0 ? '20px' : '16px'} Arial`;
         ctx.textAlign = "center";
-        ctx.fillText(index === 0 ? "B" : "S", p.x, p.y + 6);
+        ctx.fillText(index === 0 ? "B" : "S", p.x, p.y + (index === 0 ? 7 : 6));
     });
 }
 
-// 4. Durum Bilgisi ve JSON Veri Çıktısı
+// 4. Durum Bilgisi
 function updateStatus() {
     if (points.length === 1) {
-        status.innerHTML = "Başlangıç Kaydedildi. <span style='color:#c0392b'>Şimdi Bitiş'i seçin.</span>";
+        status.innerHTML = "<b style='color:#27ae60'>BAŞLANGIÇ (Yeşil) seçildi.</b> Şimdi <span style='color:#c0392b'>BİTİŞ'i</span> seçin.";
     } else if (points.length === 2) {
-        status.innerHTML = "<span style='color:#2980b9'>Rota Tamam!</span> Silmek için herhangi bir yere tıklayın.";
-        
-        // --- Ekibiniz için JSON Veri Çıktısı ---
-        const routeData = {
-            missionId: "AFET-" + Math.floor(Math.random() * 1000), // Örnek görev ID
-            coordinates: points,
-            created_at: new Date().toLocaleString()
-        };
-
-        console.log("📍 Yeni Rota Verisi Oluşturuldu:", routeData);
-        // İleride buraya 'fetch' kullanarak veriyi server'a gönderme kodu eklenebilir.
+        status.innerHTML = "<b style='color:#c0392b'>BİTİŞ (Kırmızı) seçildi.</b> Temizlemek için tekrar tıklayın.";
     }
 }
 
-// 5. Sıfırlama Mantığı
+// 5. Sıfırlama
 function resetLogic() {
     points = [];
     draw();
-    status.innerHTML = "<span style='color:#27ae60'>Başlangıç noktasını seçin.</span>";
-    console.clear(); // Konsolu temizleyerek karmaşayı önler
+    status.innerHTML = "Başlangıç noktasını (Büyük Yeşil) seçmek için haritaya tıklayın.";
 }
