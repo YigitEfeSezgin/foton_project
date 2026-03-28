@@ -1,53 +1,112 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fotoğraf Yükleme Önizleme</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 40px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A* Yol Bulma Projesi</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
 
-    #preview {
-      margin-top: 20px;
-      max-width: 400px;
-      max-height: 400px;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      display: none;
-    }
-  </style>
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        #canvasContainer {
+            margin-top: 20px;
+            position: relative;
+            overflow: auto; /* Büyük resimler için kaydırma çubuğu */
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            display: none; /* Resim yüklenene kadar gizli */
+            max-width: 100%; /* Sayfadan taşmaması için */
+            cursor: crosshair;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            background: #e1e4e8;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #status {
+            margin-top: 10px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
 
-  <h2>Fotoğraf Yükle ve Göster</h2>
-  
-  <input type="file" id="imageInput" accept="image/*">
-  <br>
-  <img id="preview" alt="Yüklenen fotoğraf önizlemesi">
+    <div class="container">
+        <h2>Fotoğraf Üzerinde Yol Bulma (A*)</h2>
+        
+        <div class="controls">
+            <label for="imageInput">Bir Harita/Fotoğraf Seçin:</label><br><br>
+            <input type="file" id="imageInput" accept="image/*">
+            <div id="status">Lütfen bir fotoğraf yükleyin...</div>
+        </div>
 
-  <script>
-    const imageInput = document.getElementById("imageInput");
-    const preview = document.getElementById("preview");
+        <div id="canvasContainer">
+            <canvas id="mainCanvas"></canvas>
+        </div>
+    </div>
 
-    imageInput.addEventListener("change", function () {
-      const file = this.files[0];
+    <script>
+        // --- BU KISIM main.js İÇERİĞİ OLACAK ---
+        const canvas = document.getElementById("mainCanvas");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        const imageInput = document.getElementById("imageInput");
+        const statusText = document.getElementById("status");
 
-      if (file) {
-        const reader = new FileReader();
+        imageInput.addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-        reader.onload = function (e) {
-          preview.src = e.target.result;
-          preview.style.display = "block";
-        };
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const img = new Image();
+                img.onload = function () {
+                    // Canvas ayarları
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    canvas.style.display = "block";
+                    
+                    // Resmi çiz
+                    ctx.drawImage(img, 0, 0);
+                    
+                    statusText.innerText = `Görsel yüklendi: ${img.width}x${img.height} piksel.`;
+                    console.log("Ortak Canvas Hazır!");
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
 
-        reader.readAsDataURL(file);
-      }
-    });
-  </script>
-
-</body>
+    </body>
 </html>
