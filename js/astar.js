@@ -47,8 +47,8 @@ function solveAStar() {
         closedSet.add(`${current.x},${current.y}`);
 
         // --- KOMŞU TARAMASI (Maksimum 2 Kare Atlama) ---
-        for (let dx = -3; dx <= 3; dx++) {
-            for (let dy = -3; dy <= 3; dy++) {
+        for (let dx = -2; dx <= 2; dx++) {
+            for (let dy = -2; dy <= 2; dy++) {
                 if (dx === 0 && dy === 0) continue; 
                 if (Math.abs(dx) !== Math.abs(dy) && dx !== 0 && dy !== 0) continue;
 
