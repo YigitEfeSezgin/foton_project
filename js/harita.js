@@ -2,7 +2,15 @@
 
 let grid = []; // Sayısal harita (Örn: 3, 2, 0, 1)
 let rows, cols;
-const cellSize = 5; // Her 5x5 piksellik alan 1 hücredir
+const cellSize = 15; // Her 5x5 piksellik alan 1 hücredir
+
+const renkSistemi = {
+    3: "rgba(0, 100, 255, 0.4)",  // YOL: Mavi
+    2: "rgba(0, 0, 0, 0.6)",      // YANMIŞ: Siyah
+    0: "rgba(0, 255, 0, 0.2)",    // ORMAN: Yeşil
+    1: "rgba(255, 0, 0, 0.6)"     // YANGIN: Kırmızı
+};
+
 
 // Senin istediğin maliyet tablosu (A* algoritması için hazır)
 const costMap = {
@@ -59,7 +67,45 @@ function haritayiAnalizEt() {
         "Sol Üst Hücre Değeri": grid[0][0],
         "Hücre Maliyeti": costMap[grid[0][0]] || "Bilinmiyor"
     });
+
+    matrisiEkranaCiz(mCtx);
 }
+
+// Resmin üzerine sayısal karşılıkları ve kareleri çizen fonksiyon
+function matrisiEkranaCiz(ctx) {
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            const deger = grid[y][x];
+            
+            // 1. Hücreyi Renklendir (Matris karesi)
+            ctx.fillStyle = renkSistemi[deger] || "transparent";
+            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+
+            // 2. Hücre Sınırlarını Çiz (Grid çizgileri - isteğe bağlı)
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"; // Çok hafif beyaz çizgiler
+            ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+
+            // 3. SAYIYI ÜZERİNE YAZ (0, 1, 2, 3)
+            // Sayıları daha okunaklı yapmak için arka planına küçük bir gölge ekleyebiliriz
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 2;
+            
+            ctx.fillStyle = "white"; // Sayı rengi
+            ctx.font = "bold 8px Arial"; // Küçük ama kalın font
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(deger, x * cellSize + (cellSize / 2), y * cellSize + (cellSize / 2));
+            
+            // Gölgeyi sıfırla (sonraki çizimler etkilenmesin)
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+        }
+    }
+    
+    document.getElementById("status").innerText = "Sistem Hazır. Rota seçimi yapabilirsiniz.";
+}
+
+
 
 // Görsel yüklendiğinde analizi tetikle
 const inputElement = document.getElementById("imageInput");
@@ -68,4 +114,9 @@ if (inputElement) {
         // main.js'nin resmi çizmesi için kısa bir bekleme
         setTimeout(haritayiAnalizEt, 1000);
     });
+}
+
+const analizBtnRef = document.getElementById("analizBtn");
+if (analizBtnRef) {
+    analizBtnRef.addEventListener("click", () => setTimeout(haritayiAnalizEt, 100));
 }
