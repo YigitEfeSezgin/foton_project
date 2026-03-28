@@ -50,8 +50,8 @@ function haritayiAnalizEt() {
                 grid[y][x] = 1;
             }
             // Duman (2)
-            else if (r >= 45 && r <= 94 && g >= 50 && g <= 95 && b >= 45 && b <= 100 && Math.abs(r - b) <= 15 && Math.abs(g - b) <= 15) {
-                grid[y][x] = 2;
+            else if (r >= 0 && r <= 60 && g >= 0 && g <= 60 && b >= 0 && b <= 60 && r > g + 10 && r > b + 10) {
+                grid[y][x] = 2; // Gri (İsli Duman)
             }
             // Yol (3)
             else if (r > 150 && g > 110 && b > 60 && r > g && g > b) {
