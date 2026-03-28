@@ -1,2 +1,3 @@
 <h1>Yangın Projesi</h1>
-<button>Başlat</button>
+<button>Başlat</button> 
+<script type="module" src="js/harita.js"></script>
