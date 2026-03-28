@@ -24,6 +24,13 @@
             display: flex;
         }
 
+        .cizgi {
+            position: absolute;
+            height: 3px;
+            background: rgba(0, 0, 0, 0.748);
+            transform-origin: center;
+        }
+
         /* SOL PANEL */
         .left-panel {
             width: 345px;
@@ -133,6 +140,31 @@
         #hesaplaBtn:hover {
             background: #7f7a75;
             font-size: 14px;
+        }
+
+        #yonBtn {
+            position: absolute;
+            left: 500;
+            top: 100;
+            width: 30px;
+            height: 20px;
+            background: #e87599;
+            color: #000000cf;
+            font-size: 9px;
+            font-weight: 100;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s ease;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #yonBtn:hover {
+            background: #ee6593;
         }
 
 
@@ -284,6 +316,7 @@
             </label>
 
             <input type="file" id="imageInput" accept="image/*">
+            <div id="status">Lütfen bir fotoğraf yükleyin...</div>
 
             <button id="analizBtn">
                 Analiz
@@ -292,8 +325,22 @@
             <button id="hesaplaBtn">
                 tahmin
             </button>
+            
+            <button id="yonBtn">
+                yon
+            </button>
 
-            <div id="status">Lütfen bir fotoğraf yükleyin...</div>
+            <div class="cizgi" style="width:200px; left:70px; top:600px; transform:rotate(0deg);"></div>
+            <div class="cizgi" style="width:150px; left:95px; top:600px; transform:rotate(45deg);"></div>
+            <div class="cizgi" style="width:200px; left:70px; top:600px; transform:rotate(90deg);"></div>
+            <div class="cizgi" style="width:150px; left:95px; top:600px; transform:rotate(135deg);"></div>
+
+
+
+
+
+
+
         </div>
 
         <div class="right-panel">
