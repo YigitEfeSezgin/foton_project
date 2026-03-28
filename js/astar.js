@@ -1,36 +1,46 @@
-// astar.js
+// astar.js - Matris Odaklı ve Atlama Yetenekli A*
 
 function solveAStar() {
-    // 1. Verileri rota.js ve harita.js'den çek
-    if (points.length < 2 || typeof grid === 'undefined') return;
+    console.log("A* Matris Analizi Başlatıldı...");
 
-    // Koordinatları Grid (Hücre) sistemine çevir (cellSize = 5 olduğu için)
-    const scale = 5; 
-    const start = { x: Math.floor(points[0].x / scale), y: Math.floor(points[0].y / scale) };
-    const end = { x: Math.floor(points[1].x / scale), y: Math.floor(points[1].y / scale) };
+    // 1. Veri Kontrolü
+    if (typeof grid === 'undefined' || grid.length === 0 || points.length < 2) {
+        console.error("Hata: Grid matrisi veya noktalar bulunamadı.");
+        return;
+    }
 
-    let openSet = []; // İncelenecek düğümler
+    const scale = (typeof cellSize !== 'undefined') ? cellSize : 15; 
+    
+    // Koordinatları Grid sistemine çevir ve matris sınırları içinde tut (Hata Koruması)
+    const start = { 
+        x: Math.max(0, Math.min(Math.floor(points[0].x / scale), cols - 1)), 
+        y: Math.max(0, Math.min(Math.floor(points[0].y / scale), rows - 1)) 
+    };
+    const end = { 
+        x: Math.max(0, Math.min(Math.floor(points[1].x / scale), cols - 1)), 
+        y: Math.max(0, Math.min(Math.floor(points[1].y / scale), rows - 1)) 
+    };
+
+    let openSet = []; 
     let closedSet = new Set();
 
-    // Başlangıç düğümü
     openSet.push({
         x: start.x, y: start.y,
-        g: 0, // Gerçek maliyet
-        h: Math.abs(start.x - end.x) + Math.abs(start.y - end.y), // Kuş uçuşu mesafe
+        g: 0,
+        h: Math.abs(start.x - end.x) + Math.abs(start.y - end.y),
         f: 0,
         parent: null
     });
 
     while (openSet.length > 0) {
-        // En düşük f değerine sahip olanı bul
         let currentIndex = 0;
         for (let i = 0; i < openSet.length; i++) {
             if (openSet[i].f < openSet[currentIndex].f) currentIndex = i;
         }
         let current = openSet[currentIndex];
 
-        // HEDEFE ULAŞTIK MI?
         if (current.x === end.x && current.y === end.y) {
+            console.log("Hedef bulundu!");
             drawFinalPath(current, scale);
             return;
         }
@@ -38,57 +48,57 @@ function solveAStar() {
         openSet.splice(currentIndex, 1);
         closedSet.add(`${current.x},${current.y}`);
 
-        // Komşuları Tara (Sağ, Sol, Yukarı, Aşağı)
-        const neighbors = [
-            { x: current.x + 1, y: current.y }, { x: current.x - 1, y: current.y },
-            { x: current.x, y: current.y + 1 }, { x: current.x, y: current.y - 1 }
-        ];
+        for (let dx = -4; dx <= 4; dx++) {
+            for (let dy = -4; dy <= 4; dy++) {
+                if (dx === 0 && dy === 0) continue; 
+                if (Math.abs(dx) !== Math.abs(dy) && dx !== 0 && dy !== 0) continue;
 
-        for (let n of neighbors) {
-            // Sınır kontrolü
-            if (n.x < 0 || n.x >= cols || n.y < 0 || n.y >= rows || closedSet.has(`${n.x},${n.y}`)) continue;
+                let nx = current.x + dx;
+                let ny = current.y + dy;
 
-            // --- KRİTİK NOKTA: MALİYET HESABI ---
-            const terrainType = grid[n.y][n.x]; // 3, 2, 1 veya 0
-            const moveCost = costMap[terrainType]; // 1, 10, 20 veya 999
+                // --- KRİTİK HATA KORUMASI ---
+                if (ny < 0 || ny >= rows || nx < 0 || nx >= cols) continue;
+                if (!grid[ny] || grid[ny][nx] === undefined) continue; 
+                if (closedSet.has(`${nx},${ny}`)) continue;
 
-            if (moveCost >= 999) continue; // Yangın olan yere asla girme!
+                const terrainType = grid[ny][nx]; 
+                const moveCost = costMap[terrainType] || 20;
 
-            let gScore = current.g + moveCost; // Sabit +1 yerine arazinin zorluğunu ekliyoruz
-            
-            let existingNode = openSet.find(o => o.x === n.x && o.y === n.y);
+                if (moveCost >= 999) continue; 
 
-            if (!existingNode) {
-                openSet.push({
-                    x: n.x, y: n.y,
-                    g: gScore,
-                    h: Math.abs(n.x - end.x) + Math.abs(n.y - end.y),
-                    f: gScore + (Math.abs(n.x - end.x) + Math.abs(n.y - end.y)),
-                    parent: current
-                });
-            } else if (gScore < existingNode.g) {
-                existingNode.g = gScore;
-                existingNode.f = existingNode.g + existingNode.h;
-                existingNode.parent = current;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                let gScore = current.g + (terrainType === 3 ? distance : distance * moveCost);
+                
+                let existingNode = openSet.find(o => o.x === nx && o.y === ny);
+
+                if (!existingNode) {
+                    let h = Math.abs(nx - end.x) + Math.abs(ny - end.y);
+                    openSet.push({
+                        x: nx, y: ny,
+                        g: gScore, h: h, f: gScore + h,
+                        parent: current
+                    });
+                } else if (gScore < existingNode.g) {
+                    existingNode.g = gScore;
+                    existingNode.f = existingNode.g + existingNode.h;
+                    existingNode.parent = current;
+                }
             }
         }
     }
-    alert("Güvenli bir yol bulunamadı!");
+    alert("Matris üzerinde güvenli bir yol bulunamadı!");
 }
 
-// Yolu Canvas'a çizme
 function drawFinalPath(node, scale) {
     ctx.beginPath();
-    ctx.strokeStyle = "#3498db"; // Mavi rota
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#000080"; 
+    ctx.lineWidth = 6;
     ctx.lineJoin = "round";
-
-    // Merkez noktadan başlatmak için +scale/2 ekliyoruz
-    ctx.moveTo(node.x * scale + scale/2, node.y * scale + scale/2);
-
+    ctx.lineCap = "round";
+    ctx.moveTo(node.x * scale + scale / 2, node.y * scale + scale / 2);
     while (node.parent) {
         node = node.parent;
-        ctx.lineTo(node.x * scale + scale/2, node.y * scale + scale/2);
+        ctx.lineTo(node.x * scale + scale / 2, node.y * scale + scale / 2);
     }
     ctx.stroke();
 }

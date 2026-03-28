@@ -1,6 +1,5 @@
+// Rota.js - Kullanıcı Etkileşimi, Görsel Koruma ve Otomatik Hesaplama
 
-
-// Şimdi log basabiliriz
 console.log("Rota.js yüklendi, canvas durumu:", canvas);
 
 let img = new Image();
@@ -12,11 +11,15 @@ imageInput.addEventListener('change', (e) => {
     if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
-            img = new Image(); // Resmi sıfırla
+            img = new Image();
             img.onload = () => {
                 canvas.width = img.width;
                 canvas.height = img.height;
                 canvas.style.display = "inline-block";
+                
+                // Resim değiştiğinde analiz verisini sıfırla
+                if (typeof originalImageData !== 'undefined') originalImageData = null;
+                
                 resetLogic(); 
             };
             img.src = event.target.result;
@@ -45,22 +48,25 @@ canvas.addEventListener('click', (e) => {
     });
 
     draw();
-    updateStatus();
+    updateStatus(); // İkinci nokta seçildiğinde tetikleyici burada çalışacak
 });
 
 // 3. Çizim Fonksiyonu
 function draw() {
-    // Önce resmi çiz (temizle-yaz döngüsü)
-    ctx.drawImage(img, 0, 0);
+    // --- KRİTİK: NUMARALANDIRILMIŞ HALİ KORU ---
+    // Eğer harita.js analiz yapmışsa ve originalImageData doluysa onu ekrana basar.
+    // Böylece noktaları koyarken numaralar silinmez.
+    if (typeof originalImageData !== 'undefined' && originalImageData !== null) {
+        ctx.putImageData(originalImageData, 0, 0);
+    } else {
+        // Analiz yapılmamışsa (ilk yükleme) orijinal resmi çiz
+        ctx.drawImage(img, 0, 0);
+    }
 
     points.forEach((p, index) => {
         ctx.beginPath();
-        
-        // --- BOYUT VE RENK MANTIĞI ---
-        // 1. nokta (index 0): Yeşil ve Büyük (radius: 15)
-        // 2. nokta (index 1): Kırmızı ve Normal (radius: 15)
-        let radius = (index === 0) ? 15 : 15;
-        let color = (index === 0) ? '#27ae60' : '#c0392b';
+        let radius = 15;
+        let color = (index === 0) ? '#27ae60' : '#c0392b'; // Başlangıç Yeşil, Bitiş Kırmızı
         
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
         ctx.fillStyle = color;
@@ -71,27 +77,42 @@ function draw() {
         ctx.lineWidth = 4;
         ctx.stroke();
         ctx.closePath();
-        
-        // Etiket Yazısı
-        /*ctx.fillStyle = "white";
-        ctx.font = `bold ${index === 0 ? '22px' : '16px'} Arial`;
-        ctx.textAlign = "center";
-        ctx.fillText(index === 0 ? "B" : "S", p.x, p.y + (index === 0 ? 8 : 6));*/
     });
 }
 
-// 4. Durum Mesajı
+// 4. Durum Mesajı ve OTOMATİK HESAPLAMA
 function updateStatus() {
     if (points.length === 1) {
-        status.innerHTML = "<b style='color:#27ae60'>BAŞLANGIÇ (Yeşil) seçildi.</b> Şimdi <span style='color:#c0392b'>BİTİŞ'i</span> seçin.";
-    } else if (points.length === 2) {
-        status.innerHTML = "<b style='color:#c0392b'>BİTİŞ (Kırmızı) seçildi.</b> Temizlemek için ekrana tekrar tıklayın.";
+        status.innerHTML = "<b style='color:#27ae60'>BAŞLANGIÇ seçildi.</b> Şimdi <span style='color:#c0392b'>BİTİŞ'i</span> seçin.";
+    } 
+    else if (points.length === 2) {
+        status.innerHTML = "<b style='color:#000080'>ROTA HESAPLANIYOR...</b>";
+        
+        console.log("📍 Otomatik hesaplama başlatılıyor...");
+
+        // --- DÜZELTME: F12'YE GEREK KALMADAN ÇALIŞTIRAN KISIM ---
+        // 100ms gecikme veriyoruz ki tarayıcı önce kırmızı noktayı çizsin, sonra algoritmayı başlatsın.
+        setTimeout(() => {
+            if (typeof solveAStar === "function") {
+                solveAStar(); 
+                status.innerHTML = "<b style='color:#000080'>Rota Çizildi!</b> Temizlemek için ekrana tıklayın.";
+            } else {
+                console.error("Hata: astar.js dosyasındaki solveAStar fonksiyonuna ulaşılamıyor!");
+            }
+        }, 100); 
     }
 }
 
 // 5. Sıfırlama
 function resetLogic() {
     points = [];
-    draw();
-    status.innerHTML = "Başlangıç noktasını (Büyük Yeşil) seçmek için haritaya tıklayın.";
+    
+    // Sıfırlarken eğer analiz varsa analizli görüntüyü, yoksa ana resmi bas
+    if (typeof originalImageData !== 'undefined' && originalImageData !== null) {
+        ctx.putImageData(originalImageData, 0, 0);
+    } else {
+        ctx.drawImage(img, 0, 0);
+    }
+    
+    status.innerHTML = "Başlangıç noktasını seçmek için haritaya tıklayın.";
 }
