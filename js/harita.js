@@ -10,8 +10,7 @@ const costMap = {
     3: 1,   // YOL: En iyi seçenek (Maliyet 1)
     2: 10,  // Yanmış Alan: Güvenli ama engebeli (Maliyet 10)
     0: 20,  // Orman: Gidilebilir ama riskli (Maliyet 20)
-    1: 999, // Yangın: Kesinlikle gidilemez (Maliyet max)
-   -1: 999  // Engel/Duman: Gidilemez (Maliyet max)
+    1: 999 // Yangın: Kesinlikle gidilemez (Maliyet max)
 };
 
 function haritayiAnalizEt() {
@@ -51,10 +50,7 @@ function haritayiAnalizEt() {
             else if (g > 80 && r < 140) {
                 grid[y][x] = 0; // ORMAN
             }
-            // 5. YANMIŞ ALAN (Koyu gri/Siyah, yeşilden farklı)
-            else if (g < 60 && r < 60 && b < 60) {
-                grid[y][x] = 2; // YANMIŞ ALAN
-            }
+            
         }
     }
     console.log("Navigasyon haritası oluşturuldu.");
