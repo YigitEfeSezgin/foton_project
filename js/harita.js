@@ -6,18 +6,15 @@ const cellSize = 15; // Her 5x5 piksellik alan 1 hücredir
 
 const renkSistemi = {
     3: "rgba(0, 100, 255, 0.4)",  // YOL: Mavi
-    2: "rgba(0, 0, 0, 0.6)",      // YANMIŞ: Siyah
-    0: "rgba(0, 255, 0, 0.2)",    // ORMAN: Yeşil
-    1: "rgba(255, 0, 0, 0.6)"     // YANGIN: Kırmızı
+    1: "rgba(255, 0, 0, 0.6)",    // YANGIN VE KÜL: Kırmızı
+    0: "rgba(0, 255, 0, 0.3)"     // ORMAN: Yeşil
 };
-
 
 // Senin istediğin maliyet tablosu (A* algoritması için hazır)
 const costMap = {
-    3: 1,   // YOL: En iyi (Mavi)
-    2: 10,  // Yanmış: Engebeli (Siyah)
-    0: 20,  // Orman: Riskli (Yeşil)
-    1: 999  // Yangın: Geçilemez (Kırmızı)
+    3: 1,   // YOL: En iyi seçenek
+    1: 999, // YANGIN VE KÜL: Kesinlikle gidilemez (Kırmızı bölge)
+    0: 20   // ORMAN: Gidilebilir ama riskli
 };
 
 function haritayiAnalizEt() {
@@ -41,24 +38,26 @@ function haritayiAnalizEt() {
             const g = imageData[pxIndex + 1];
             const b = imageData[pxIndex + 2];
 
-            // --- SENİN NUMARALANDIRMA SİSTEMİN ---
+            // --- HASSAS RENK ANALİZİ VE DUMAN FİLTRELEMESİ ---
 
-            // 1. YOL (3): Toprak/Asfalt yollar (Açık renkli/Bej)
-            if (r > 160 && g > 140 && Math.abs(r - g) < 50) {
-                grid[y][x] = 3; 
+            if (r > 180 && g < 100 && b < 100) {
+                grid[y][x] = 1; // Kırmızı
             }
-            // 2. YANGIN (1): Kırmızı alanlar
-            else if (r > 190 && g < 130) {
-                grid[y][x] = 1;
+            // 2. YOL (3): Hassas Toprak/Asfalt Tonları
+            //if (r > 150 && g > 110 && b > 60 && r > g && g > b) {
+    // Mantık: R > G > B sıralaması kahverengi/toprak tonlarının imzasıdır.
+    // Aradaki farkların çok aşırı olmamasını sağlıyoruz (Alevden ayırmak için).
+   // if ((r - g) < 80 && (g - b) < 80) {
+       // grid[y][x] = 3;
+            // Bej/toprak tonları: Kırmızı ve Yeşil benzer, Maviden daha baskın.
+            else if (r > 150 && g > 110 && b > 60 && r > g && g > b) {
+                grid[y][x] = 3; // Mavi
             }
-            // 3. YANMIŞ ALAN (2): Koyu gri/Siyah küller
-            else if (r < 60 && g < 60 && b < 60) {
-                grid[y][x] = 2;
+            // 3. ORMAN (0): Varsayılan alan
+            else if (r >= 20 && r <= 90 && g >= 30 && g <= 110 && b >= 10 && b <= 60 && g >= r && g >= b) {
+                grid[y][x] = 0; // Yeşil
             }
-            // 4. ORMAN (0): Yeşil alanlar (Geri kalan yeşiller)
-            else if (g > 70 && g > r) {
-                grid[y][x] = 0;
-            }
+            
         }
     }
 
