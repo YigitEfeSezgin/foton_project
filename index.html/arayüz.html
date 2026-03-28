@@ -6,114 +6,308 @@
     <title>A* Yol Bulma Projesi</title>
     <style>
         * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            background: #000;
-            color: #fff;
+            background: #dcd9d4;
+            font-family: "Georgia", "Times New Roman", serif;
             min-height: 100vh;
-            font-family: "Comic Sans MS", "Segoe Script", cursive, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
+            color: #5f5b57;
         }
 
         .container {
             width: 100%;
-            max-width: 1300px;
+            min-height: 100vh;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 80px;
         }
 
+        /* SOL PANEL */
         .left-panel {
-            width: 420px;
+            width: 345px;
+            min-width: 345px;
+            border-right: 1px solid #6e6a66;
+            padding: 28px 22px;
+            background: #dcd9d4;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 18px;
         }
+
 
         .upload-box {
             width: 100%;
-            height: 240px;
-            border: 3px dashed #fff;
-            border-radius: 2px;
+            height: 175px;
+            border: 2px dashed #b9b3ad;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.08);
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            font-size: 42px;
+            align-items: center;
             cursor: pointer;
             text-align: center;
-            letter-spacing: 1px;
-            transition: 0.3s ease;
-            padding: 20px;
-        }
-
-        #canvasContainer {
-            margin-top: 20px;
+            transition: 0.25s ease;
             position: relative;
-            overflow: auto; /* Büyük resimler için kaydırma çubuğu */
-            border: 2px dashed #ccc;
-            border-radius: 10px;
-            min-height: 200px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            overflow: hidden;
         }
 
-        canvas {
-            display: none; /* Resim yüklenene kadar gizli */
-            max-width: 100%; /* Sayfadan taşmaması için */
-            cursor: crosshair;
+        .upload-box:hover {
+            background: rgba(255,255,255,0.18);
+            border-color: #9e9892;
         }
 
-        .controls {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
+        .upload-box::before {
+            content: "↥";
+            font-size: 46px;
+            color: #a8a19b;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .upload-main-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2f2f2f;
+            margin-bottom: 6px;
+            font-family: Arial, sans-serif;
+        }
+
+        .upload-sub-text {
+            font-size: 11px;
+            color: #8a847e;
+            letter-spacing: 0.5px;
+            font-family: Arial, sans-serif;
+            text-transform: uppercase;
         }
 
         input[type="file"] {
-            padding: 10px;
-            background: #e1e4e8;
-            border-radius: 5px;
-            cursor: pointer;
+            display: none;
         }
 
+        #analizBtn {
+            width: 100%;
+            height: 56px;
+            border: none;
+            background: #8f8a85;
+            color: #f3f1ee;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s ease;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #analizBtn:hover {
+            background: #7f7a75;
+            font-size: 14px;
+        }
+
+        #hesaplaBtn {
+            width: 100%;
+            height: 56px;
+            border: none;
+            background: #8f8a85;
+            color: #f3f1ee;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s ease;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #hesaplaBtn:hover {
+            background: #7f7a75;
+            font-size: 14px;
+        }
+
+
+
         #status {
-            margin-top: 10px;
-            color: #666;
+            font-size: 13px;
+            color: #7d7771;
             font-style: italic;
+            line-height: 1.5;
+            margin-top: 4px;
+            font-family: Arial, sans-serif;
+        }
+
+        /* SAĞ TARAF */
+        .right-panel {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: #ddd9d4;
+            overflow: hidden;
+        }
+
+        .right-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle, rgba(120,120,120,0.18) 1px, transparent 1px);
+            background-size: 22px 22px;
+            opacity: 0.25;
+            pointer-events: none;
+        }
+        .frame-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .frame-wrapper::before,
+        .frame-wrapper::after {
+            content: "";
+            position: absolute;
+            width: calc(100% - 40px);
+            height: calc(100% - 40px);
+            border: 2px solid rgba(120, 120, 120, 0.28);
+            pointer-events: none;
+        }
+
+        #canvasContainer {
+            position: relative;
+            width: calc(100% - 120px);
+            height: calc(100vh - 120px);
+            min-height: 500px;
+            border: 4px solid rgba(150, 150, 150, 0.35);
+            background: rgba(255,255,255,0.08);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            z-index: 2;
+            box-shadow: 0 18px 36px rgba(0,0,0,0.05);
+        }
+
+        canvas {
+            display: none;
+            max-width: 100%;
+            height: auto;
+            cursor: crosshair;
+            position: relative;
+            z-index: 3;
+        }
+
+        /* Placeholder görünümü */
+        .placeholder {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #9d9892;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .placeholder-icon {
+            font-size: 80px;
+            line-height: 1;
+            margin-bottom: 18px;
+            opacity: 0.8;
+        }
+
+        .placeholder-text {
+            font-size: 24px;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            color: #a29c96;
+        }
+
+        h2 {
+            display: none;
+        }
+
+        @media (max-width: 1000px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left-panel {
+                width: 100%;
+                min-width: unset;
+                border-right: none;
+                border-bottom: 1px solid #6e6a66;
+            }
+
+            .right-panel {
+                padding: 20px;
+            }
+
+            #canvasContainer {
+                width: 100%;
+                height: 70vh;
+                min-height: 400px;
+            }
+
+            .placeholder-text {
+                font-size: 16px;
+                letter-spacing: 4px;
+                text-align: center;
+                padding: 0 12px;
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Fotoğraf Üzerinde Yol Bulma (A*)</h2>
-        
-        <div class="controls">
-            <label for="imageInput">Bir Harita/Fotoğraf Seçin:</label><br><br>
+        <div class="left-panel">
+            <div class="panel-title"></div>
+
+            <label for="imageInput" class="upload-box">
+                <div class="upload-main-text">Upload Satellite Imagery</div>
+                <div class="upload-sub-text">JPG, PNG up to 10MB</div>
+            </label>
+
             <input type="file" id="imageInput" accept="image/*">
 
-            <br><br> <button id="analizBtn" style="padding: 10px 20px; background-color: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                2. Haritayı Analiz Et (Numaralandır)
-            </button> 
+            <button id="analizBtn">
+                Analiz
+            </button>
+
+            <button id="hesaplaBtn">
+                tahmin
+            </button>
 
             <div id="status">Lütfen bir fotoğraf yükleyin...</div>
         </div>
 
-        <div id="canvasContainer">
-            <canvas id="mainCanvas"></canvas>
+        <div class="right-panel">
+            <div class="frame-wrapper">
+                <div id="canvasContainer">
+                    <div class="placeholder" id="placeholderBox">
+                        <div class="placeholder-icon">🗺</div>
+                        <div class="placeholder-text">NO SATELLITE DATA CONNECTED</div>
+                    </div>
+                    <canvas id="mainCanvas"></canvas>
+                </div>
+            </div>
         </div>
     </div>
-
-
 
     <script>
         // --- BU KISIM main.js İÇERİĞİ OLACAK ---
@@ -121,6 +315,7 @@
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         const imageInput = document.getElementById("imageInput");
         const statusText = document.getElementById("status");
+        const placeholderBox = document.getElementById("placeholderBox");
 
         imageInput.addEventListener("change", function (e) {
             const file = e.target.files[0];
@@ -134,6 +329,10 @@
                     canvas.width = img.width;
                     canvas.height = img.height;
                     canvas.style.display = "block";
+
+                    if (placeholderBox) {
+                        placeholderBox.style.display = "none";
+                    }
                     
                     // Resmi çiz
                     ctx.drawImage(img, 0, 0);
@@ -146,11 +345,10 @@
             reader.readAsDataURL(file);
         });
     </script>
+
     <script src="../js/harita.js"></script>
     <script src="../js/astar.js"></script>
     <script src="../js/rota.js"></script>
     <script src="../js/main.js"></script>
 </body>
 </html>
-
- 
