@@ -58,6 +58,13 @@ function draw() {
     // Böylece noktaları koyarken numaralar silinmez.
     if (typeof originalImageData !== 'undefined' && originalImageData !== null) {
         ctx.putImageData(originalImageData, 0, 0);
+
+        //aleyna
+        if (typeof tahminiAtesiCiz === "function") {
+            tahminiAtesiCiz(ctx);
+        }//aleyna bitiş 
+
+
     } else {
         // Analiz yapılmamışsa (ilk yükleme) orijinal resmi çiz
         ctx.drawImage(img, 0, 0);
@@ -110,6 +117,14 @@ function resetLogic() {
     // Sıfırlarken eğer analiz varsa analizli görüntüyü, yoksa ana resmi bas
     if (typeof originalImageData !== 'undefined' && originalImageData !== null) {
         ctx.putImageData(originalImageData, 0, 0);
+
+        //aleyna
+        if (typeof tahminiAtesiCiz === "function") {
+            tahminiAtesiCiz(ctx);
+        }
+        //aleyna bitiş 
+
+
     } else {
         ctx.drawImage(img, 0, 0);
     }

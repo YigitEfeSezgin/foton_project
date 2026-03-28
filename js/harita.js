@@ -33,6 +33,7 @@ function haritayiAnalizEt() {
         originalImageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height);
     } else {
         mCtx.putImageData(originalImageData, 0, 0);
+        tahminiAtesiCiz(mCtx);
     }
 
     const imageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height).data;
@@ -123,6 +124,34 @@ function matrisiEkranaCiz(ctx) {
     }
     document.getElementById("status").innerText = "Analiz Tamamlandı. Rota seçebilirsiniz.";
 }
+
+
+// ==========================================================
+// === YENİ EKLENEN KOD BAŞLANGICI ==========================
+// ==========================================================
+function tahminiAtesiCiz(ctx) {
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            // Sadece yangın (1) olan hücreleri bul
+            if (grid[y][x] === 1) { 
+                ctx.fillStyle = "rgba(255, 0, 0, 0.5)"; // Yarı saydam (%50) kırmızı
+                ctx.beginPath();
+                // Hücrenin tam ortasına daire çiziyoruz
+                ctx.arc(
+                    x * cellSize + (cellSize / 2), 
+                    y * cellSize + (cellSize / 2), 
+                    cellSize / 2, 
+                    0, 2 * Math.PI
+                );
+                ctx.fill();
+            }
+        }
+    }
+}
+// ==========================================================
+// === YENİ EKLENEN KOD BİTİŞİ ==============================
+// ==========================================================
+
 
 // Olay Dinleyiciler
 const inputElement = document.getElementById("imageInput");
