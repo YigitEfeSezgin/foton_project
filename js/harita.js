@@ -1,96 +1,106 @@
-// --- js/harita.js (SENİN KODLARIN) ---
+// harita.js - Yangın Yayılım Simülasyonu
 
-const canvas = document.getElementById('haritaCanvas');
-const ctx = canvas.getContext('2d', { willReadFrequently: true });
-const img = new Image();
+let grid = [];
+let rows, cols;
+const cellSize = 5; // Performans için pikselleri gruplandırıyoruz (5x5 bloklar)
 
-// DİKKAT: Fotoğrafının adını buraya doğru yazdığından emin ol!
-img.src = 'img/yangın_1.png'; 
+// main.js'deki resim yükleme işlemi bittiğinde tetiklenecek bir mekanizma
+// CustomEvent kullanarak main.js'den haber alabiliriz veya basitçe bir kontrol döngüsü kurabiliriz.
 
-// Hassasiyet ayarı (Matrisin boyutları - 50x50 ızgara)
-const SATIR = 50; 
-const SUTUN = 50; 
+function haritayiAnalizEt() {
+    if (!canvas || !ctx) return;
 
-// Bu değişkeni "export" ediyoruz ki A* yazan arkadaşın astar.js içinden alabilsin.
-export let haritaMatrisi = []; 
+    // Canvas boyutlarına göre grid oluştur
+    cols = Math.floor(canvas.width / cellSize);
+    rows = Math.floor(canvas.height / cellSize);
+    grid = Array.from({ length: rows }, () => Array(cols).fill(0));
 
-img.onload = function() {
-    // 1. Canvas'ı fotoğrafa göre boyutlandır ve fotoğrafı çiz
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.drawImage(img, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
 
-    const hucreGenisligi = canvas.width / SUTUN;
-    const hucreYuksekligi = canvas.height / SATIR;
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            // Hücrenin merkezindeki pikselin rengini kontrol et
+            const pxIndex = ((y * cellSize) * canvas.width + (x * cellSize)) * 4;
+            const r = imageData[pxIndex];
+            const g = imageData[pxIndex + 1];
+            const b = imageData[pxIndex + 2];
 
-    let geciciMatris = []; 
-
-    // 2. AŞAMA: RENK OKUMA VE SINIFLANDIRMA
-    for (let y = 0; y < SATIR; y++) {
-        let satirDizisi = [];
-        for (let x = 0; x < SUTUN; x++) {
-            const pikselX = Math.floor((x * hucreGenisligi) + (hucreGenisligi / 2));
-            const pikselY = Math.floor((y * hucreYuksekligi) + (hucreYuksekligi / 2));
-
-            const pikselVerisi = ctx.getImageData(pikselX, pikselY, 1, 1).data;
-            const r = pikselVerisi[0];
-            const g = pikselVerisi[1];
-            const b = pikselVerisi[2];
-
-            let hucreDegeri = 0; // Varsayılan: 0 (Yol / Güvenli)
-
-            // RENK AYARLARI (Senin fotoğrafına göre test edip sayıları değiştirebilirsin)
-            if (r > 150 && g < 100 && b < 100) {
-                hucreDegeri = 9; // Kırmızı/Turuncu yoğunsa -> Yangın
-            } else if (g > 100 && r < 120 && b < 120) {
-                hucreDegeri = 1; // Yeşil yoğunsa -> Orman
-            }
-
-            satirDizisi.push(hucreDegeri);
-        }
-        geciciMatris.push(satirDizisi); 
-    }
-
-    // 3. AŞAMA: YANGIN SIÇRAMA RİSKİ (Etrafı 8 Yapma Algoritması)
-    // Orijinal 9'ları kaybetmemek için matrisin kopyasını alıyoruz
-    haritaMatrisi = JSON.parse(JSON.stringify(geciciMatris)); 
-
-    for (let y = 0; y < SATIR; y++) {
-        for (let x = 0; x < SUTUN; x++) {
-            if (geciciMatris[y][x] === 9) { // Eğer bu kare yanıyorsa
-                // Üst, Alt, Sol ve Sağ komşuları 8 (Tehlikeli) yap
-                if (y > 0 && haritaMatrisi[y-1][x] !== 9) haritaMatrisi[y-1][x] = 8; 
-                if (y < SATIR - 1 && haritaMatrisi[y+1][x] !== 9) haritaMatrisi[y+1][x] = 8; 
-                if (x > 0 && haritaMatrisi[y][x-1] !== 9) haritaMatrisi[y][x-1] = 8; 
-                if (x < SUTUN - 1 && haritaMatrisi[y][x+1] !== 9) haritaMatrisi[y][x+1] = 8; 
+            // Renk Analizi:
+            // Eğer kırmızı yoğunluktaysa -> Yangın (1)
+            // Eğer yeşil yoğunluktaysa -> Orman (0)
+            if (r > 150 && g < 100) {
+                grid[y][x] = 1; // Başlangıç yangını
+            } else if (g > 100 && r < 150) {
+                grid[y][x] = 0; // Yanıcı yeşil alan
+            } else {
+                grid[y][x] = -1; // Boş alan/Engel (kayalık vs)
             }
         }
     }
+    console.log("Harita analiz edildi. Simülasyon başlıyor...");
+    simulasyonuBaslat();
+}
 
-    // 4. AŞAMA: EKRANDA GÖRSELLEŞTİRME (Kareleri ve Sayıları Çizme)
-    for (let y = 0; y < SATIR; y++) {
-        for (let x = 0; x < SUTUN; x++) {
-            const deger = haritaMatrisi[y][x];
-            
-            // Izgara çizgileri
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-            ctx.strokeRect(x * hucreGenisligi, y * hucreYuksekligi, hucreGenisligi, hucreYuksekligi);
+function simulasyonuBaslat() {
+    setInterval(() => {
+        yanginiYay();
+        ciz();
+    }, 200); // Her 200ms'de bir yayılım
+}
 
-            // Renklere göre sayılar
-            if (deger === 9) ctx.fillStyle = "red";
-            else if (deger === 8) ctx.fillStyle = "orange";
-            else if (deger === 1) ctx.fillStyle = "#00ff00"; // Açık yeşil
-            else ctx.fillStyle = "white";
+function yanginiYay() {
+    let yeniGrid = grid.map(row => [...row]);
 
-            ctx.font = "14px Arial"; // Yazı boyutu
-            ctx.fillText(deger, (x * hucreGenisligi) + 4, (y * hucreYuksekligi) + 16);
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (grid[y][x] === 1) { // Eğer bu hücre yanıyorsa
+                // Komşulara bak (Yukarı, Aşağı, Sol, Sağ)
+                const komsular = [
+                    [y - 1, x], [y + 1, x], [y, x - 1], [y, x + 1]
+                ];
+
+                komsular.forEach(([ky, kx]) => {
+                    if (ky >= 0 && ky < rows && kx >= 0 && kx < cols) {
+                        if (grid[ky][kx] === 0) { // Komşu ormansa
+                            // %30 ihtimalle yangın sıçrasın (gerçekçilik için)
+                            if (Math.random() > 0.7) {
+                                yeniGrid[ky][kx] = 1;
+                            }
+                        }
+                    }
+                });
+                // Yanan yer bir süre sonra söner (siyah olur)
+                yeniGrid[y][x] = 2; 
+            }
         }
     }
+    grid = yeniGrid;
+}
 
-    // Konsola Tablo Olarak Yazdır
-    console.log("Matris Başarıyla Üretildi! Kırmızı=9, Turuncu=8, Yeşil=1, Beyaz=0");
-    console.table(haritaMatrisi);
+function ciz() {
+    const haritaCanvas = document.getElementById("haritaCanvas");
+    const hCtx = haritaCanvas.getContext("2d");
     
-    // A* yazan arkadaşa sinyal gönderiyoruz: "Matris hazır, okuyabilirsin!"
-    document.dispatchEvent(new Event('matrisHazir'));
-};
+    haritaCanvas.width = canvas.width;
+    haritaCanvas.height = canvas.height;
+
+    hCtx.clearRect(0, 0, haritaCanvas.width, haritaCanvas.height);
+
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (grid[y][x] === 1) {
+                hCtx.fillStyle = "rgba(255, 69, 0, 0.8)"; // Turuncu/Kırmızı yangın
+                hCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            } else if (grid[y][x] === 2) {
+                hCtx.fillStyle = "rgba(40, 40, 40, 0.6)"; // Yanmış küllü alan
+                hCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            }
+        }
+    }
+}
+
+// main.js'de resim yüklendikten sonra çalışması için bir dinleyici
+imageInput.addEventListener("change", () => {
+    // Resmin yüklenmesi için kısa bir bekleme (veya img.onload callback'i içine konulmalı)
+    setTimeout(haritayiAnalizEt, 500);
+});
