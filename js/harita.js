@@ -2,7 +2,7 @@
 
 let grid = []; 
 let rows, cols;
-const cellSize = 15; 
+const cellSize = 8; 
 let originalImageData = null;
 
 const renkSistemi = {
