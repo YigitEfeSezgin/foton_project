@@ -57,7 +57,7 @@ function draw() {
         ctx.beginPath();
         
         // --- BOYUT VE RENK MANTIĞI ---
-        // 1. nokta (index 0): Yeşil ve Büyük (radius: 25)
+        // 1. nokta (index 0): Yeşil ve Büyük (radius: 15)
         // 2. nokta (index 1): Kırmızı ve Normal (radius: 15)
         let radius = (index === 0) ? 15 : 15;
         let color = (index === 0) ? '#27ae60' : '#c0392b';
@@ -73,10 +73,10 @@ function draw() {
         ctx.closePath();
         
         // Etiket Yazısı
-        ctx.fillStyle = "white";
+        /*ctx.fillStyle = "white";
         ctx.font = `bold ${index === 0 ? '22px' : '16px'} Arial`;
         ctx.textAlign = "center";
-        ctx.fillText(index === 0 ? "B" : "S", p.x, p.y + (index === 0 ? 8 : 6));
+        ctx.fillText(index === 0 ? "B" : "S", p.x, p.y + (index === 0 ? 8 : 6));*/
     });
 }
 
