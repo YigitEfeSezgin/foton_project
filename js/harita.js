@@ -1,28 +1,25 @@
-// harita.js - Maliyet Odaklı Hücresel Otomat Matrisi
+// harita.js - Güvenlik Koridoru ve Yol Genişletme Destekli Analiz
 
-let grid = []; // Sayısal harita (Örn: 3, 2, 0, 1)
+let grid = []; 
 let rows, cols;
-const cellSize = 15; // Her 5x5 piksellik alan 1 hücredir
+const cellSize = 15; 
 let originalImageData = null;
 
 const renkSistemi = {
     3: "rgba(0, 100, 255, 0.4)",  // YOL: Mavi
-    1: "rgba(255, 0, 0, 0.6)",    // YANGIN VE KÜL: Kırmızı
-    0: "rgba(0, 255, 0, 0.3)" ,    // ORMAN: Yeşil
-    2: "rgba(150, 150, 150, 0.7)" //duman: gri
+    1: "rgba(255, 0, 0, 0.6)",    // YANGIN: Kırmızı
+    0: "rgba(0, 255, 0, 0.3)",    // ORMAN: Yeşil
+    2: "rgba(150, 150, 150, 0.7)" // DUMAN: Gri
 };
 
-// Senin istediğin maliyet tablosu (A* algoritması için hazır)
 const costMap = {
-    3: 1,   // YOL: En iyi seçenek
-    1: 999, // YANGIN VE KÜL: Kesinlikle gidilemez (Kırmızı bölge)
-    0: 20,   // ORMAN: Gidilebilir ama riskli
-    2: 999  // duman: görüş yok geçilemez 
+    3: 1,   
+    1: 999, 
+    0: 5,   
+    2: 999  
 };
 
 function haritayiAnalizEt() {
-    
-    // Arayüzdeki canvas'ı kontrol et
     const mCanvas = document.getElementById("mainCanvas");
     if (!mCanvas) return;
     const mCtx = mCanvas.getContext("2d");
@@ -30,20 +27,17 @@ function haritayiAnalizEt() {
     cols = Math.floor(mCanvas.width / cellSize);
     rows = Math.floor(mCanvas.height / cellSize);
     
-    // Matrisi oluştur
     grid = Array.from({ length: rows }, () => Array(cols).fill(0));
 
-    // --- YENİ MANTIK: TEMİZ RESMİ KORUMA ---
     if (!originalImageData) {
-        // İlk tıklamada: Resmin boyanmamış, temiz halini hafızaya al
         originalImageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height);
     } else {
-        // İkinci ve sonraki tıklamalarda: Önce eski boyaları silip temiz resmi ekrana bas
         mCtx.putImageData(originalImageData, 0, 0);
     }
 
     const imageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height).data;
 
+    // --- 1. ADIM: İLK RENK ANALİZİ ---
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
             const pxIndex = ((y * cellSize) * mCanvas.width + (x * cellSize)) * 4;
@@ -51,83 +45,98 @@ function haritayiAnalizEt() {
             const g = imageData[pxIndex + 1];
             const b = imageData[pxIndex + 2];
 
-            // --- HASSAS RENK ANALİZİ VE DUMAN FİLTRELEMESİ ---
-            // yangın :kırmızı 1
+            // Yangın (1)
             if (r > 180 && g < 100 && b < 100) {
-                grid[y][x] = 1; // Kırmızı
+                grid[y][x] = 1;
             }
-            // 2. DUMAN (2): Gri ve Beyaz tonları
-            // R, G, B değerleri 120'den büyük (aydınlık) ve birbirlerine çok yakın olmalı.
+            // Duman (2)
             else if (r >= 45 && r <= 94 && g >= 50 && g <= 95 && b >= 45 && b <= 100 && Math.abs(r - b) <= 15 && Math.abs(g - b) <= 15) {
-                grid[y][x] = 2; // Gri
+                grid[y][x] = 2;
             }
-            // Bej/toprak tonları: Kırmızı ve Yeşil benzer, Maviden daha baskın.
+            // Yol (3)
             else if (r > 150 && g > 110 && b > 60 && r > g && g > b) {
-                grid[y][x] = 3; // Mavi
+                grid[y][x] = 3;
             }
-            // 3. ORMAN (0): Varsayılan alan
+            // Orman (0)
             else if (r >= 20 && r <= 90 && g >= 30 && g <= 110 && b >= 10 && b <= 60 && g >= r && g >= b) {
-                grid[y][x] = 0; // Yeşil
+                grid[y][x] = 0;
             }
-            
         }
     }
 
-    console.log("Harita Numaralandırıldı!");
-    console.log("Örnek Maliyet Analizi:", {
-        "Sol Üst Hücre Değeri": grid[0][0],
-        "Hücre Maliyeti": costMap[grid[0][0]] || "Bilinmiyor"
-    });
+    // --- 2. ADIM: YANGIN GENİŞLETME (Güvenlik Koridoru - 16 Komşuluk/2 Birim) ---
+    let fireTempGrid = JSON.parse(JSON.stringify(grid));
+    for (let y = 2; y < rows - 2; y++) {
+        for (let x = 2; x < cols - 2; x++) {
+            if (grid[y][x] === 1) { 
+                for (let dy = -2; dy <= 2; dy++) {
+                    for (let dx = -2; dx <= 2; dx++) {
+                        fireTempGrid[y + dy][x + dx] = 1;
+                    }
+                }
+            }
+        }
+    }
+    grid = fireTempGrid;
 
+    // --- 3. ADIM: YOL GENİŞLETME (8-Komşuluk Dilation) ---
+    let roadTempGrid = JSON.parse(JSON.stringify(grid));
+    for (let y = 1; y < rows - 1; y++) {
+        for (let x = 1; x < cols - 1; x++) {
+            if (grid[y][x] === 3) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        // Yol genişlerken yangın veya dumanın üzerine binme
+                        if (grid[y + dy][x + dx] !== 1 && grid[y + dy][x + dx] !== 2) {
+                            roadTempGrid[y + dy][x + dx] = 3;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    grid = roadTempGrid;
+
+    console.log("Analiz Bitti: Yangın Koridoru (2 birim) ve Yol Genişletme uygulandı.");
     matrisiEkranaCiz(mCtx);
 }
 
-// Resmin üzerine sayısal karşılıkları ve kareleri çizen fonksiyon
 function matrisiEkranaCiz(ctx) {
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
             const deger = grid[y][x];
-            
-            // 1. Hücreyi Renklendir (Matris karesi)
             ctx.fillStyle = renkSistemi[deger] || "transparent";
             ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-
-            // 2. Hücre Sınırlarını Çiz (Grid çizgileri - isteğe bağlı)
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"; // Çok hafif beyaz çizgiler
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
             ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
 
-            // 3. SAYIYI ÜZERİNE YAZ (0, 1, 2, 3)
-            // Sayıları daha okunaklı yapmak için arka planına küçük bir gölge ekleyebiliriz
             ctx.shadowColor = "black";
             ctx.shadowBlur = 2;
-            
-            ctx.fillStyle = "white"; // Sayı rengi
-            ctx.font = "bold 8px Arial"; // Küçük ama kalın font
+            ctx.fillStyle = "white";
+            ctx.font = "bold 8px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(deger, x * cellSize + (cellSize / 2), y * cellSize + (cellSize / 2));
-            
-            // Gölgeyi sıfırla (sonraki çizimler etkilenmesin)
             ctx.shadowColor = "transparent";
             ctx.shadowBlur = 0;
         }
     }
-    
-    document.getElementById("status").innerText = "Sistem Hazır. Rota seçimi yapabilirsiniz.";
+    document.getElementById("status").innerText = "Analiz Tamamlandı. Rota seçebilirsiniz.";
 }
 
-
-
-// Görsel yüklendiğinde analizi tetikle
+// Olay Dinleyiciler
 const inputElement = document.getElementById("imageInput");
 if (inputElement) {
     inputElement.addEventListener("change", function() {
         originalImageData = null;
-        document.getElementById("status").innerText = "Fotoğraf yüklendi. Analiz için butona basın.";
+        document.getElementById("status").innerText = "Fotoğraf yüklendi. Analiz bekleniyor...";
     });
 }
 
 const analizBtnRef = document.getElementById("analizBtn");
 if (analizBtnRef) {
-    analizBtnRef.addEventListener("click", () => setTimeout(haritayiAnalizEt, 100));
+    analizBtnRef.addEventListener("click", () => {
+        document.getElementById("status").innerText = "Analiz ediliyor...";
+        setTimeout(haritayiAnalizEt, 100);
+    });
 }
