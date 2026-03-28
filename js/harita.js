@@ -8,14 +8,16 @@ let originalImageData = null;
 const renkSistemi = {
     3: "rgba(0, 100, 255, 0.4)",  // YOL: Mavi
     1: "rgba(255, 0, 0, 0.6)",    // YANGIN VE KÜL: Kırmızı
-    0: "rgba(0, 255, 0, 0.3)"     // ORMAN: Yeşil
+    0: "rgba(0, 255, 0, 0.3)" ,    // ORMAN: Yeşil
+    2: "rgba(150, 150, 150, 0.7)" //duman: gri
 };
 
 // Senin istediğin maliyet tablosu (A* algoritması için hazır)
 const costMap = {
     3: 1,   // YOL: En iyi seçenek
     1: 999, // YANGIN VE KÜL: Kesinlikle gidilemez (Kırmızı bölge)
-    0: 20   // ORMAN: Gidilebilir ama riskli
+    0: 20,   // ORMAN: Gidilebilir ama riskli
+    2: 999  // duman: görüş yok geçilemez 
 };
 
 function haritayiAnalizEt() {
@@ -50,16 +52,15 @@ function haritayiAnalizEt() {
             const b = imageData[pxIndex + 2];
 
             // --- HASSAS RENK ANALİZİ VE DUMAN FİLTRELEMESİ ---
-
+            // yangın :kırmızı 1
             if (r > 180 && g < 100 && b < 100) {
                 grid[y][x] = 1; // Kırmızı
             }
-            // 2. YOL (3): Hassas Toprak/Asfalt Tonları
-            //if (r > 150 && g > 110 && b > 60 && r > g && g > b) {
-    // Mantık: R > G > B sıralaması kahverengi/toprak tonlarının imzasıdır.
-    // Aradaki farkların çok aşırı olmamasını sağlıyoruz (Alevden ayırmak için).
-   // if ((r - g) < 80 && (g - b) < 80) {
-       // grid[y][x] = 3;
+            // 2. DUMAN (2): Gri ve Beyaz tonları
+            // R, G, B değerleri 120'den büyük (aydınlık) ve birbirlerine çok yakın olmalı.
+            else if (r >= 45 && r <= 94 && g >= 50 && g <= 95 && b >= 45 && b <= 100 && Math.abs(r - b) <= 15 && Math.abs(g - b) <= 15) {
+                grid[y][x] = 2; // Gri
+            }
             // Bej/toprak tonları: Kırmızı ve Yeşil benzer, Maviden daha baskın.
             else if (r > 150 && g > 110 && b > 60 && r > g && g > b) {
                 grid[y][x] = 3; // Mavi
