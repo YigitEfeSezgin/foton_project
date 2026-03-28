@@ -24,12 +24,34 @@
             display: flex;
         }
 
-        .cizgi {
-            position: absolute;
-            height: 3px;
-            background: rgba(0, 0, 0, 0.748);
-            transform-origin: center;
-        }
+.line-wrapper {
+    position: absolute;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    transform-origin: center;
+}
+
+.cizgi {
+    flex: 1;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.line-btn {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: none;
+    background: #e87599;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.line-btn:hover {
+    background: #ff4f85;
+    transform: scale(1.2);
+}
 
         /* SOL PANEL */
         .left-panel {
@@ -330,7 +352,7 @@
         <div class="cizgi"></div>
         <button class="line-btn end"></button>
     </div>
-    
+
     <div class="line-wrapper" style="width:150px; left:95px; top:600px; transform:rotate(45deg);">
         <button class="line-btn start"></button>
         <div class="cizgi"></div>
