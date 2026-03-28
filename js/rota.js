@@ -17,13 +17,6 @@ imageInput.addEventListener('change', (e) => {
                 canvas.width = img.width;
                 canvas.height = img.height;
                 canvas.style.display = "inline-block";
-                
-                // Harita analizi için global değişkenleri güncellemek gerekebilir
-                // harita.js'deki analiz fonksiyonunu burada tetikliyoruz
-                if (typeof haritayiAnalizEt === 'function') {
-                    haritayiAnalizEt();
-                }
-                
                 resetLogic(); // Her yeni resimde sistemi sıfırla
             };
             img.src = event.target.result;
@@ -85,39 +78,29 @@ function draw() {
     });
 }
 
-// 4. Durum Bilgisi ve A* Tetikleyici
+// 4. Durum Bilgisi ve JSON Veri Çıktısı
 function updateStatus() {
     if (points.length === 1) {
         status.innerHTML = "Başlangıç Kaydedildi. <span style='color:#c0392b'>Şimdi Bitiş'i seçin.</span>";
     } else if (points.length === 2) {
-        status.innerHTML = "<span style='color:#2980b9'>Rota hesaplanıyor...</span>";
+        status.innerHTML = "<span style='color:#2980b9'>Rota Tamam!</span> Silmek için herhangi bir yere tıklayın.";
         
         // --- Ekibiniz için JSON Veri Çıktısı ---
         const routeData = {
-            missionId: "AFET-" + Math.floor(Math.random() * 1000),
+            missionId: "AFET-" + Math.floor(Math.random() * 1000), // Örnek görev ID
             coordinates: points,
             created_at: new Date().toLocaleString()
         };
-        console.log("📍 Yeni Rota Verisi:", routeData);
 
-        // --- A* ALGORİTMASI TETİKLEYİCİSİ ---
-        // Algoritmanın çalışması için kısa bir gecikme veriyoruz (UI donmaması için)
-        setTimeout(() => {
-            if (typeof solveAStar === 'function') {
-                solveAStar(); 
-                status.innerHTML = "<span style='color:#2980b9'>Rota Tamam!</span> Silmek için tıklayın.";
-            } else {
-                console.error("Hata: solveAStar fonksiyonu bulunamadı! astar.js yüklü mü?");
-                status.innerHTML = "<span style='color:red'>Hata: Algoritma hazır değil!</span>";
-            }
-        }, 100);
+        console.log("📍 Yeni Rota Verisi Oluşturuldu:", routeData);
+        // İleride buraya 'fetch' kullanarak veriyi server'a gönderme kodu eklenebilir.
     }
 }
 
 // 5. Sıfırlama Mantığı
 function resetLogic() {
     points = [];
-    draw(); // Resmi ve noktaları temizler
+    draw();
     status.innerHTML = "<span style='color:#27ae60'>Başlangıç noktasını seçin.</span>";
-    console.log("Sistem sıfırlandı.");
+    console.clear(); // Konsolu temizleyerek karmaşayı önler
 }
