@@ -1,18 +1,22 @@
-console.log("Rota.js yüklendi, canvas durumu:", canvas);
+// Hata almamak için değişkenleri en üstte tanımlıyoruz
 const canvas = document.getElementById('mainCanvas');
 const ctx = canvas.getContext('2d');
 const imageInput = document.getElementById('imageInput');
 const status = document.getElementById('status');
 
+// Şimdi log basabiliriz
+console.log("Rota.js yüklendi, canvas durumu:", canvas);
+
 let img = new Image();
 let points = []; 
 
-// 1. Resim Yükleme İşlemi (Aynı kaldı)
+// 1. Resim Yükleme İşlemi
 imageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
+            img = new Image(); // Resmi sıfırla
             img.onload = () => {
                 canvas.width = img.width;
                 canvas.height = img.height;
@@ -25,11 +29,11 @@ imageInput.addEventListener('change', (e) => {
     }
 });
 
-// 2. Tıklama Döngüsü (Mantık güncellendi)
+// 2. Tıklama Döngüsü
 canvas.addEventListener('click', (e) => {
     if (!img.src) return;
 
-    // 3. Tıklama Kontrolü: Eğer dizide zaten 2 nokta varsa her şeyi temizle
+    // Eğer zaten 2 nokta varsa (B ve S), 3. tıklamada her şeyi sil
     if (points.length === 2) {
         resetLogic();
         return;
@@ -48,16 +52,17 @@ canvas.addEventListener('click', (e) => {
     updateStatus();
 });
 
-// 3. Çizim Fonksiyonu (Boyut ve Renk Mantığı Güncellendi)
+// 3. Çizim Fonksiyonu
 function draw() {
+    // Önce resmi çiz (temizle-yaz döngüsü)
     ctx.drawImage(img, 0, 0);
 
     points.forEach((p, index) => {
         ctx.beginPath();
         
-        // --- BOYUT VE RENK AYARI ---
-        // 1. nokta (index 0): Yeşil ve Büyük (Yarıçap: 25)
-        // 2. nokta (index 1): Kırmızı ve Normal (Yarıçap: 15)
+        // --- BOYUT VE RENK MANTIĞI ---
+        // 1. nokta (index 0): Yeşil ve Büyük (radius: 25)
+        // 2. nokta (index 1): Kırmızı ve Normal (radius: 15)
         let radius = (index === 0) ? 25 : 15;
         let color = (index === 0) ? '#27ae60' : '#c0392b';
         
@@ -73,18 +78,18 @@ function draw() {
         
         // Etiket Yazısı
         ctx.fillStyle = "white";
-        ctx.font = `bold ${index === 0 ? '20px' : '16px'} Arial`;
+        ctx.font = `bold ${index === 0 ? '22px' : '16px'} Arial`;
         ctx.textAlign = "center";
-        ctx.fillText(index === 0 ? "B" : "S", p.x, p.y + (index === 0 ? 7 : 6));
+        ctx.fillText(index === 0 ? "B" : "S", p.x, p.y + (index === 0 ? 8 : 6));
     });
 }
 
-// 4. Durum Bilgisi
+// 4. Durum Mesajı
 function updateStatus() {
     if (points.length === 1) {
         status.innerHTML = "<b style='color:#27ae60'>BAŞLANGIÇ (Yeşil) seçildi.</b> Şimdi <span style='color:#c0392b'>BİTİŞ'i</span> seçin.";
     } else if (points.length === 2) {
-        status.innerHTML = "<b style='color:#c0392b'>BİTİŞ (Kırmızı) seçildi.</b> Temizlemek için tekrar tıklayın.";
+        status.innerHTML = "<b style='color:#c0392b'>BİTİŞ (Kırmızı) seçildi.</b> Temizlemek için ekrana tekrar tıklayın.";
     }
 }
 
