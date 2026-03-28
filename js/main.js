@@ -1,7 +1,4 @@
-// Global değişkenler - Diğer tüm JS dosyaları bunlara erişebilir
-const canvas = document.getElementById("mainCanvas");
-const ctx = canvas.getContext("2d");
-const imageInput = document.getElementById("imageInput");
+
 
 imageInput.addEventListener("change", function (e) {
     const file = e.target.files[0];

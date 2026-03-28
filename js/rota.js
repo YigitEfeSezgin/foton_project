@@ -1,8 +1,4 @@
-// Hata almamak için değişkenleri en üstte tanımlıyoruz
-const canvas = document.getElementById('mainCanvas');
-const ctx = canvas.getContext('2d');
-const imageInput = document.getElementById('imageInput');
-const status = document.getElementById('status');
+
 
 // Şimdi log basabiliriz
 console.log("Rota.js yüklendi, canvas durumu:", canvas);
@@ -63,7 +59,7 @@ function draw() {
         // --- BOYUT VE RENK MANTIĞI ---
         // 1. nokta (index 0): Yeşil ve Büyük (radius: 25)
         // 2. nokta (index 1): Kırmızı ve Normal (radius: 15)
-        let radius = (index === 0) ? 25 : 15;
+        let radius = (index === 0) ? 15 : 15;
         let color = (index === 0) ? '#27ae60' : '#c0392b';
         
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
