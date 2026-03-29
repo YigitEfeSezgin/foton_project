@@ -222,21 +222,42 @@ async function ruzgariOtomatikGuncelle() {
     if (typeof ruzgarVerisiAl === "function") {
         window.guncelRuzgar = await ruzgarVerisiAl(); 
         
+        // CSS ile döndürmek için rüzgar derecesini alıyoruz
+        let aci = window.guncelRuzgar.derece;
+        
+        // Kutunun içini Flexbox ile ikiye bölüyoruz: Sol taraf yazılar, sağ taraf dev dönen ok!
         ruzgarKutusu.innerHTML = `
             <h3>🌬️ Canlı Rüzgar Verisi</h3>
-            <div id="ruzgarIcerik">
-                <b>Hız:</b> ${window.guncelRuzgar.hiz} km/s <br><br>
-                <b>Yön:</b> ${window.guncelRuzgar.derece}°
+            <div id="ruzgarIcerik" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <b>Hız:</b> ${window.guncelRuzgar.hiz} km/s <br><br>
+                    <b>Yön:</b> ${window.guncelRuzgar.derece}°
+                </div>
+                
+                <div style="
+                    font-size: 45px; 
+                    transform: rotate(${aci}deg); 
+                    transition: transform 0.5s ease-out; 
+                    color: #e67e22; 
+                    text-shadow: 0 0 10px rgba(230, 126, 34, 0.5);
+                    margin-right: 15px;
+                ">
+                    ⬇
+                </div>
             </div>
         `;
     }
 }
 
-// 1. FOTOĞRAF YÜKLENDİĞİNDE SENSÖRÜ UYANDIR (HATA DÜZELTİLDİ: Sadece 1 tane bırakıldı)
+// 1. FOTOĞRAF YÜKLENDİĞİNDE SENSÖRÜ UYANDIR
 const inputElement = document.getElementById("imageInput");
 if (inputElement) {
     inputElement.addEventListener("change", function() {
         originalImageData = null;
+        
+        // YENİ EKLENDİ: Eski rüzgarın hafızasını sil, yeni fotoğrafta 15-30 arasından yeni bir başlangıç yapsın!
+        window.mevcutRuzgarHizi = null; 
+        
         document.getElementById("status").innerText = "Fotoğraf yüklendi. Sensörler aktif...";
         
         if (ruzgarInterval) clearInterval(ruzgarInterval); 
@@ -245,6 +266,8 @@ if (inputElement) {
         ruzgarInterval = setInterval(ruzgariOtomatikGuncelle, 3000); 
     });
 }
+
+
 
 // Analiz Butonu 
 const analizBtnRef = document.getElementById("analizBtn");
