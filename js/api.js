@@ -1,7 +1,7 @@
 // api.js - Şifresiz/Key'siz Açık Kaynak Rüzgar Verisi (Open-Meteo)
 
 // Varsayılan koordinatlar: Antalya / Manavgat (Yangın bölgesi örneği)
-async function ruzgarVerisiAl(lat = 36.78, lon = 31.44) { 
+async function ruzgarVerisiAl(lat = 37.08, lon = 28.26) { 
     try {
         // Open-Meteo API key İSTEMEZ! Direkt çalışır.
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
