@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A* Yol Bulma Projesi</title>
+    <title>Yangın Yönetim Sistemi</title>
     <style>
         * {
             box-sizing: border-box;
@@ -25,6 +25,7 @@
         }
 
         /* SOL PANEL */
+
         .left-panel {
             width: 345px;
             min-width: 345px;
@@ -34,12 +35,18 @@
             display: flex;
             flex-direction: column;
             gap: 18px;
+
         }
 
+        .left-panel img {
+            display: block;
+            margin: 0 auto;
+            width: 180px;
+        }
 
         .upload-box {
             width: 100%;
-            height: 175px;
+            height: 150px;
             border: 2px dashed #b9b3ad;
             border-radius: 12px;
             background: rgba(255,255,255,0.08);
@@ -135,33 +142,6 @@
             font-size: 14px;
         }
 
-        #yonBtn {
-            position: absolute;
-            left: 500;
-            top: 100;
-            width: 30px;
-            height: 20px;
-            background: #e87599;
-            color: #000000cf;
-            font-size: 9px;
-            font-weight: 100;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.2s ease;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #yonBtn:hover {
-            background: #ee6593;
-        }
-
-
-
         #status {
             font-size: 13px;
             color: #7d7771;
@@ -170,25 +150,27 @@
             margin-top: 4px;
             font-family: Arial, sans-serif;
         }
+
+
         /*RÜZGAR KUTUSU*/
         #ruzgarKutusu {
             width: 300px;
             min-height: 150px;
-            background: #1e1e1e;
-            border-radius: 12px;
+            background: #7f7a75;
+            border: none;
             padding: 15px;
-            color: white;
-            box-shadow: 0 0 15px rgba(255, 100, 0, 0.4);
+            color: rgb(255, 255, 255);
+            box-shadow: 0 0 15px rgb(255, 255, 255);
             font-family: Arial;
         }
 
         #ruzgarKutusu h3 {
             margin-bottom: 10px;
-            color: orange;
+            color: rgb(255, 255, 255);
             }
 
         #ruzgarIcerik {
-            background: #2a2a2a;
+            background: #8f8a85;
             padding: 10px;
             border-radius: 8px;
         }
@@ -271,7 +253,7 @@
         }
 
         .placeholder-icon {
-            font-size: 80px;
+            font-size: 300px;
             line-height: 1;
             margin-bottom: 18px;
             opacity: 0.8;
@@ -320,15 +302,14 @@
     </style>
 </head>
 <body>
-
     <div class="container">
-        <div class="left-panel">
+        <div class="left-panel" >
             <div class="panel-title"></div>
-
+            <img src="Foton_logo.jpeg" width="200">
             <label for="imageInput" class="upload-box">
-                <div class="upload-main-text">Upload Satellite Imagery</div>
-                <div class="upload-sub-text">JPG, PNG up to 10MB</div>
+                <div class="upload-main-text">Fotoğraf Yükle</div>
             </label>
+
 
             <input type="file" id="imageInput" accept="image/*">
             <div id="status">Lütfen bir fotoğraf yükleyin...</div>
@@ -342,7 +323,7 @@
             </button>
 
             <div id="ruzgarKutusu">
-            <h3>Yangın Verileri 🔥</h3>
+            <h3>Canlı Rüzgar Verisi</h3>
             <div id="ruzgarIcerik">
                 Veri bekleniyor...
             </div>
@@ -354,7 +335,7 @@
                 <div id="canvasContainer">
                     <div class="placeholder" id="placeholderBox">
                         <div class="placeholder-icon">🗺</div>
-                        <div class="placeholder-text">NO SATELLITE DATA CONNECTED</div>
+                        <div class="placeholder-text"></div>
                     </div>
                     <canvas id="mainCanvas"></canvas>
                 </div>
@@ -406,8 +387,6 @@
     <script src="../js/main.js"></script>
     <script src="../js/tahmin.js"></script>
     <script src="../js/api.js"></script>
-
-
 
 </body>
 </html>
