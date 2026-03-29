@@ -12,10 +12,10 @@
         }
 
         body {
-            background: #dcd9d4;
+            background: #ffffff;
             font-family: "Georgia", "Times New Roman", serif;
             min-height: 100vh;
-            color: #5f5b57;
+            color: #ffffff00;
         }
 
         .container {
@@ -25,13 +25,20 @@
         }
 
         /* SOL PANEL */
+        .panel-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #040d53;
+            margin-bottom: 6px;
+            font-family: Arial, sans-serif;
+        }
 
         .left-panel {
             width: 345px;
             min-width: 345px;
-            border-right: 1px solid #6e6a66;
+            border-right: 1px solid #ffffff;
             padding: 28px 22px;
-            background: #dcd9d4;
+            background: #ffffff;
             display: flex;
             flex-direction: column;
             gap: 18px;
@@ -47,7 +54,7 @@
         .upload-box {
             width: 100%;
             height: 150px;
-            border: 2px dashed #b9b3ad;
+            border: 2px dashed #575757;
             border-radius: 12px;
             background: rgba(255,255,255,0.08);
             display: flex;
@@ -69,7 +76,7 @@
         .upload-box::before {
             content: "↥";
             font-size: 46px;
-            color: #a8a19b;
+            color: #1e2b5c;
             line-height: 1;
             margin-bottom: 12px;
         }
@@ -84,7 +91,7 @@
 
         .upload-sub-text {
             font-size: 11px;
-            color: #8a847e;
+            color: #5c5751;
             letter-spacing: 0.5px;
             font-family: Arial, sans-serif;
             text-transform: uppercase;
@@ -98,7 +105,7 @@
             width: 100%;
             height: 56px;
             border: none;
-            background: #8f8a85;
+            background: #2a3b86;
             color: #f3f1ee;
             font-size: 13px;
             font-weight: 700;
@@ -114,7 +121,7 @@
         }
 
         #analizBtn:hover {
-            background: #7f7a75;
+            background: #6373b7;
             font-size: 14px;
         }
 
@@ -122,7 +129,7 @@
             width: 100%;
             height: 56px;
             border: none;
-            background: #8f8a85;
+            background: #2a3b86;
             color: #f3f1ee;
             font-size: 13px;
             font-weight: 700;
@@ -138,7 +145,7 @@
         }
 
         #tahminBtn:hover {
-            background: #7f7a75;
+            background: #6373b7;
             font-size: 14px;
         }
 
@@ -156,7 +163,7 @@
         #ruzgarKutusu {
             width: 300px;
             min-height: 150px;
-            background: #7f7a75;
+            background: #2a3b86;
             border: none;
             padding: 15px;
             color: rgb(255, 255, 255);
@@ -166,11 +173,11 @@
 
         #ruzgarKutusu h3 {
             margin-bottom: 10px;
-            color: rgb(255, 255, 255);
+            color:#ffffff;
             }
 
         #ruzgarIcerik {
-            background: #8f8a85;
+            background: #6373b7;
             padding: 10px;
             border-radius: 8px;
         }
@@ -183,7 +190,7 @@
             justify-content: center;
             align-items: center;
             padding: 40px;
-            background: #ddd9d4;
+            background: #ffffff;
             overflow: hidden;
         }
 
@@ -212,7 +219,7 @@
             position: absolute;
             width: calc(100% - 40px);
             height: calc(100% - 40px);
-            border: 2px solid rgba(120, 120, 120, 0.28);
+            border: 2px solid rgb(255, 255, 255);
             pointer-events: none;
         }
 
@@ -221,8 +228,8 @@
             width: calc(100% - 120px);
             height: calc(100vh - 120px);
             min-height: 500px;
-            border: 4px solid rgba(150, 150, 150, 0.35);
-            background: rgba(255,255,255,0.08);
+            border: 4px solid #959cbc;
+            background: rgba(255, 255, 255, 0.61);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -301,10 +308,10 @@
         }
     </style>
 </head>
-<body>
+<body>            
     <div class="container">
         <div class="left-panel" >
-            <div class="panel-title"></div>
+            <div class="panel-title"><i> • YANGIN YÖNETİM SİSTEMİ</i></div>
             <img src="Foton_logo.jpeg" width="200">
             <label for="imageInput" class="upload-box">
                 <div class="upload-main-text">Fotoğraf Yükle</div>
