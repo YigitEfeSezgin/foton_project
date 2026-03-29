@@ -24,6 +24,33 @@
             display: flex;
         }
 
+.line-wrapper {
+    position: absolute;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    transform-origin: center;
+}
+
+.cizgi {
+    flex: 1;
+    height: 5px;
+    background: rgba(0, 0, 0, 0.645);
+}
+
+.line-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 150%;
+    border: none;
+    background: #e87599;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.line-btn:hover {
+    background: #f56893;
+}
 
         /* SOL PANEL */
         .left-panel {
@@ -112,7 +139,7 @@
             font-size: 14px;
         }
 
-        #tahminBtn {
+        #hesaplaBtn {
             width: 100%;
             height: 56px;
             border: none;
@@ -131,12 +158,35 @@
             gap: 10px;
         }
 
-        #tahminBtn:hover {
+        #hesaplaBtn:hover {
             background: #7f7a75;
             font-size: 14px;
         }
 
-    
+        #yonBtn {
+            position: absolute;
+            left: 500;
+            top: 100;
+            width: 30px;
+            height: 20px;
+            background: #e87599;
+            color: #000000cf;
+            font-size: 9px;
+            font-weight: 100;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s ease;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #yonBtn:hover {
+            background: #ee6593;
+        }
 
 
 
@@ -293,7 +343,7 @@
                 Analiz
             </button>
 
-            <button id="hesaplaBtn">
+            <button id="tahminBtn">
                 tahmin
             </button>
     <div class="line-wrapper" style="width:250px; left:45px; top:600px; transform:rotate(0deg);">
@@ -377,7 +427,5 @@
     <script src="../js/astar.js"></script>
     <script src="../js/rota.js"></script>
     <script src="../js/main.js"></script>
-    <script src="../js/tahmin.js"></script>
-    <script src="../js/api.js"></script>
 </body>
 </html>
