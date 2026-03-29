@@ -95,9 +95,8 @@ function haritayiAnalizEt() {
     let mesafeLimit = 10; // en fazla 10 br uzaklık kabul
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-            if (grid[y][x] === 2) { // Eğer hücre dumansa
+            if (grid[y][x] === 2) { 
                 let alevVarMi = false;
-                // Çevresindeki 10 birimlik alanı tara
                 for (let dy = -mesafeLimit; dy <= mesafeLimit; dy++) {
                     for (let dx = -mesafeLimit; dx <= mesafeLimit; dx++) {
                         let ny = y + dy, nx = x + dx;
@@ -114,7 +113,6 @@ function haritayiAnalizEt() {
     grid = cleanGrid;
 
 
-    // --- 2. ADIM: YANGIN GENİŞLETME (Güvenlik Koridoru - 16 Komşuluk/2 Birim) ---
     let fireTempGrid = JSON.parse(JSON.stringify(grid));
     for (let y = 2; y < rows - 2; y++) {
         for (let x = 2; x < cols - 2; x++) {
@@ -136,7 +134,7 @@ function haritayiAnalizEt() {
             if (grid[y][x] === 3) {
                 for (let dy = -1; dy <= 1; dy++) {
                     for (let dx = -1; dx <= 1; dx++) {
-                        // Yol genişlerken yangın veya dumanın üzerine binme
+                        // birbirlerinin üzerine gwlince
                         if (grid[y + dy][x + dx] !== 1 && grid[y + dy][x + dx] !== 2) {
                             roadTempGrid[y + dy][x + dx] = 3;
                         }
@@ -191,7 +189,7 @@ function tahminiAtesiCiz(ctx) {
 
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-            // Sadece yangın (1) olan hücreleri bul
+            // yangını bul 
             if (grid[y][x] === 1) { 
                 ctx.fillStyle = "rgba(255, 0, 0, 0.5)"; 
                 ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
@@ -210,7 +208,7 @@ async function ruzgariOtomatikGuncelle() {
     if (!ruzgarKutusu) return; 
 
     if (typeof ruzgarVerisiAl === "function") {
-        // HACKATHON ŞOVU: Fotoğraf adından algılanan koordinatları API'ye gönderiyoruz
+        
         let lat = window.secilenLat || 36.78;
         let lon = window.secilenLon || 31.44;
         let sehir = window.secilenSehir || "Antalya";
@@ -246,22 +244,20 @@ async function ruzgariOtomatikGuncelle() {
     }
 }
 
-// ==========================================================
-// === 2. FOTOĞRAF YÜKLENDİĞİNDE DOSYA ADINDAN KONUM BULMA ===
-// ==========================================================
+
 const inputElement = document.getElementById("imageInput");
 if (inputElement) {
     inputElement.addEventListener("change", function(e) {
         originalImageData = null;
         window.mevcutRuzgarHizi = null; 
 
-        // Dosya adını alıp küçük harfe çeviriyoruz (Örn: "izmir_yangin.jpg")
+        // dosya adına göre yapıyor
         let dosyaAdi = "";
         if (e.target.files && e.target.files.length > 0) {
             dosyaAdi = e.target.files[0].name.toLowerCase();
         }
 
-        // --- YAPAY ZEKA GİBİ ÇALIŞAN KONUM TESPİTİ ---
+        // konum eşleştirme
         if (dosyaAdi.includes("izmir")) {
             window.secilenLat = 38.42; window.secilenLon = 27.14; window.secilenSehir = "İzmir / Türkiye";
         } else if (dosyaAdi.includes("mugla")) {
@@ -269,7 +265,7 @@ if (inputElement) {
         } else if (dosyaAdi.includes("canakkale")) {
             window.secilenLat = 40.15; window.secilenLon = 26.40; window.secilenSehir = "Çanakkale / Türkiye";
         } else {
-            // Hiçbiri yoksa varsayılan olarak Antalya/Manavgat
+            // varsayılan antalya
             window.secilenLat = 36.78; window.secilenLon = 31.44; window.secilenSehir = "Antalya (Manavgat)";
         }
 
