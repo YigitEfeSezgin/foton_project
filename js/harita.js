@@ -4,6 +4,7 @@ let grid = [];
 let rows, cols;
 const cellSize = 10; 
 let originalImageData = null;
+let tahminAktifMi = false;
 
 const renkSistemi = {
     3: "rgba(0, 100, 255, 0.4)",  // YOL: Mavi
@@ -20,6 +21,7 @@ const costMap = {
 };
 
 function haritayiAnalizEt() {
+    window.tahminAktifMi = false;
     const mCanvas = document.getElementById("mainCanvas");
     if (!mCanvas) return;
     const mCtx = mCanvas.getContext("2d");
@@ -33,7 +35,7 @@ function haritayiAnalizEt() {
         originalImageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height);
     } else {
         mCtx.putImageData(originalImageData, 0, 0);
-        tahminiAtesiCiz(mCtx);
+        
     }
 
     const imageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height).data;
@@ -152,6 +154,11 @@ function haritayiAnalizEt() {
 }
 
 function matrisiEkranaCiz(ctx) {
+    if (originalImageData) {
+        ctx.putImageData(originalImageData, 0, 0);
+    } else {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
             const deger = grid[y][x];
@@ -184,20 +191,14 @@ function matrisiEkranaCiz(ctx) {
 // === YENİ EKLENEN KOD BAŞLANGICI ==========================
 // ==========================================================
 function tahminiAtesiCiz(ctx) {
+    if(!window.tahminAktifMi) return;
+
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
             // Sadece yangın (1) olan hücreleri bul
             if (grid[y][x] === 1) { 
                 ctx.fillStyle = "rgba(255, 0, 0, 0.5)"; // Yarı saydam (%50) kırmızı
-                ctx.beginPath();
-                // Hücrenin tam ortasına daire çiziyoruz
-                ctx.arc(
-                    x * cellSize + (cellSize / 2), 
-                    y * cellSize + (cellSize / 2), 
-                    cellSize / 2, 
-                    0, 2 * Math.PI
-                );
-                ctx.fill();
+                ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
             }
         }
     }
@@ -231,3 +232,10 @@ if (analizBtnRef) {
         setTimeout(haritayiAnalizEt, 100);
     });
 }
+
+// YENİ EKLENDİ: Tahmin butonuna basıldığını algıla ve şeffaf çizim kilidini aç
+document.addEventListener("click", function(e) {
+    if (e.target && (e.target.id === 'tahminBtn' || e.target.innerText === 'TAHMİN')) {
+        window.tahminAktifMi = true; 
+    }
+});
