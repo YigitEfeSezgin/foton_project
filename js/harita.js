@@ -171,7 +171,12 @@ function matrisiEkranaCiz(ctx) {
             ctx.shadowBlur = 0;
         }
     }
-    document.getElementById("status").innerText = "Analiz Tamamlandı. Rota seçebilirsiniz.";
+
+    let ruzgarBilgisi = "";
+    if (window.guncelRuzgar) {
+        ruzgarBilgisi = `<br><span style="color:#e67e22;">🌬️ Anlık Rüzgar: ${window.guncelRuzgar.hiz} km/s | Yön: ${window.guncelRuzgar.derece}°</span>`;
+    }
+    document.getElementById("status").innerHTML = `<b>Analiz Tamamlandı. Rota seçebilirsiniz.</b> ${ruzgarBilgisi}`;
 }
 
 
@@ -213,8 +218,16 @@ if (inputElement) {
 
 const analizBtnRef = document.getElementById("analizBtn");
 if (analizBtnRef) {
-    analizBtnRef.addEventListener("click", () => {
-        document.getElementById("status").innerText = "Analiz ediliyor...";
+    analizBtnRef.addEventListener("click", async () => {
+        document.getElementById("status").innerText = "Hava durumu çekiliyor ve Analiz ediliyor...";
+        
+        // Önce rüzgarı çek (Otomatik çalışır)
+        window.guncelRuzgar = await ruzgarVerisiAl(); 
+        
+        // Ekrana rüzgarı yazdır
+        document.getElementById("status").innerHTML = 
+            `<b>Analiz ediliyor...</b> <br> 🌬️ Rüzgar: ${window.guncelRuzgar.hiz} km/s | Yön: ${window.guncelRuzgar.derece}°`;
+        
         setTimeout(haritayiAnalizEt, 100);
     });
 }
