@@ -148,7 +148,7 @@ function haritayiAnalizEt() {
     console.log("Analiz Bitti: Yangın Koridoru (2 birim) ve Yol Genişletme uygulandı.");
     matrisiEkranaCiz(mCtx);
 }
-
+/* renklerin gözüktüğü eski fonksiyon
 function matrisiEkranaCiz(ctx) {
     if (originalImageData) {
         ctx.putImageData(originalImageData, 0, 0);
@@ -181,6 +181,50 @@ function matrisiEkranaCiz(ctx) {
     }
     document.getElementById("status").innerHTML = "<b>Analiz Tamamlandı. Rota seçebilirsiniz.</b>" ;
 }
+*/
+
+function matrisiEkranaCiz(ctx) {
+    if (originalImageData) {
+        ctx.putImageData(originalImageData, 0, 0);
+    } else {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
+    if (!window.tahminAktifMi) {
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                const deger = grid[y][x];
+                ctx.fillStyle = renkSistemi[deger] || "transparent";
+                ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+                ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+
+                ctx.shadowColor = "black";
+                ctx.shadowBlur = 2;
+                ctx.fillStyle = "white";
+                ctx.font = "bold 8px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(deger, x * cellSize + (cellSize / 2), y * cellSize + (cellSize / 2));
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur = 0;
+            }
+        }
+        document.getElementById("status").innerHTML = "<b>Analiz Tamamlandı. Rota seçebilirsiniz.</b>";
+
+    } else {  //tahminse sadece alevler renkler sayılar yok 
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                if (grid[y][x] === 1) { 
+                    ctx.fillStyle = "rgba(255, 0, 0, 0.2)"; 
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+        document.getElementById("status").innerHTML = "<b style='color:#e74c3c;'>Tahmin Aktif: Alevler rüzgar yönünde ilerliyor!</b>";
+    }
+}
+
 
 
 // 
