@@ -7,12 +7,11 @@ imageInput.addEventListener("change", function (e) {
         reader.onload = function (event) {
             const img = new Image();
             img.onload = function () {
-                // Canvas'ı görünür yap ve boyutlarını ayarla
+                
                 canvas.style.display = "block";
                 canvas.width = img.width;
                 canvas.height = img.height;
                 
-                // Fotoğrafı tuvale çiz
                 ctx.drawImage(img, 0, 0);
                 
                 console.log("Sistem Hazır: Fotoğraf ortak Canvas'a yüklendi.");

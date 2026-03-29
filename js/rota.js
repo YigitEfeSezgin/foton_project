@@ -1,11 +1,11 @@
-// Rota.js - Kullanıcı Etkileşimi, Görsel Koruma ve Otomatik Hesaplama
+// Rota.js - başlangıç ve bitişi ekleme
 
 console.log("Rota.js yüklendi, canvas durumu:", canvas);
 
 let img = new Image();
 let points = []; 
 
-// 1. Resim Yükleme İşlemi
+// resim yğkleme
 imageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -17,7 +17,7 @@ imageInput.addEventListener('change', (e) => {
                 canvas.height = img.height;
                 canvas.style.display = "inline-block";
                 
-                // Resim değiştiğinde analiz verisini sıfırla
+                // resim değişince
                 if (typeof originalImageData !== 'undefined') originalImageData = null;
                 
                 resetLogic(); 
@@ -28,11 +28,10 @@ imageInput.addEventListener('change', (e) => {
     }
 });
 
-// 2. Tıklama Döngüsü
+// click
 canvas.addEventListener('click', (e) => {
     if (!img.src) return;
 
-    // Eğer zaten 2 nokta varsa (B ve S), 3. tıklamada her şeyi sil
     if (points.length === 2) {
         resetLogic();
         return;
@@ -48,14 +47,11 @@ canvas.addEventListener('click', (e) => {
     });
 
     draw();
-    updateStatus(); // İkinci nokta seçildiğinde tetikleyici burada çalışacak
+    updateStatus(); // tetikleyici
 });
 
-// 3. Çizim Fonksiyonu
 function draw() {
-    // --- KRİTİK: NUMARALANDIRILMIŞ HALİ KORU ---
-    // Eğer harita.js analiz yapmışsa ve originalImageData doluysa onu ekrana basar.
-    // Böylece noktaları koyarken numaralar silinmez.
+   
     if (typeof originalImageData !== 'undefined' && originalImageData !== null) {
         ctx.putImageData(originalImageData, 0, 0);
 
@@ -66,20 +62,18 @@ function draw() {
 
 
     } else {
-        // Analiz yapılmamışsa (ilk yükleme) orijinal resmi çiz
         ctx.drawImage(img, 0, 0);
     }
 
     points.forEach((p, index) => {
         ctx.beginPath();
         let radius = 15;
-        let color = (index === 0) ? '#27ae60' : '#c0392b'; // Başlangıç Yeşil, Bitiş Kırmızı
+        let color = (index === 0) ? '#27ae60' : '#c0392b'; 
         
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
         
-        // Beyaz Kenarlık
         ctx.strokeStyle = 'white';
         ctx.lineWidth = 4;
         ctx.stroke();
@@ -87,7 +81,7 @@ function draw() {
     });
 }
 
-// 4. Durum Mesajı ve OTOMATİK HESAPLAMA
+
 function updateStatus() {
     if (points.length === 1) {
         status.innerHTML = "<b style='color:#27ae60'>BAŞLANGIÇ seçildi.</b> Şimdi <span style='color:#c0392b'>BİTİŞ'i</span> seçin.";
@@ -97,8 +91,7 @@ function updateStatus() {
         
         console.log("📍 Otomatik hesaplama başlatılıyor...");
 
-        // --- DÜZELTME: F12'YE GEREK KALMADAN ÇALIŞTIRAN KISIM ---
-        // 100ms gecikme veriyoruz ki tarayıcı önce kırmızı noktayı çizsin, sonra algoritmayı başlatsın.
+       
         setTimeout(() => {
             if (typeof solveAStar === "function") {
                 solveAStar(); 
@@ -110,12 +103,11 @@ function updateStatus() {
     }
 }
 
-// 5. Sıfırlama
+
 function resetLogic() {
     points = [];
     
-    // Sıfırlarken eğer analiz varsa analizli görüntüyü, yoksa ana resmi bas
-    if (typeof originalImageData !== 'undefined' && originalImageData !== null) {
+    if (typeof originalImageData !== 'undefined' && originalImageData !== null) {// sıfırlarken analşli resim varsa yoksa analizsiz
         ctx.putImageData(originalImageData, 0, 0);
 
         //aleyna

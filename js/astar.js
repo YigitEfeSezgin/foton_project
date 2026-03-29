@@ -1,4 +1,4 @@
-// astar.js - Güvenlik ve Mesafe Odaklı A*
+// astar.js - rota için
 
 function solveAStar() {
     console.log("A* Matris Analizi Başlatıldı...");
@@ -46,7 +46,7 @@ function solveAStar() {
         openSet.splice(currentIndex, 1);
         closedSet.add(`${current.x},${current.y}`);
 
-        // --- KOMŞU TARAMASI (Maksimum 2 Kare Atlama) ---
+        //2 kare atlar max komşu tarama için 
         for (let dx = -2; dx <= 2; dx++) {
             for (let dy = -2; dy <= 2; dy++) {
                 if (dx === 0 && dy === 0) continue; 
@@ -59,17 +59,16 @@ function solveAStar() {
                 if (!grid[ny] || grid[ny][nx] === undefined) continue; 
                 if (closedSet.has(`${nx},${ny}`)) continue;
 
-                // --- GÜVENLİK KONTROLÜ 1: Yangın veya Duman Üstü ---
                 const terrainType = grid[ny][nx]; 
                 if (terrainType === 1 || terrainType === 2) continue;
 
-                // --- GÜVENLİK KONTROLÜ 2: Yangına 8 Kare Mesafe (Güvenlik Koridoru) ---
+                // 8 kare mesafesi
                 if (checkFireProximity(nx, ny, 8)) continue;
 
                 const moveCost = costMap[terrainType] || 20;
                 let distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Maliyeti ağırlaştırıyoruz (Özellikle orman için)
+                // maliyet
                 let stepCost = (terrainType === 3) ? distance : (distance * moveCost * 5);
                 let gScore = current.g + stepCost;
                 
@@ -105,7 +104,7 @@ function checkFireProximity(x, y, radius) {
             let cx = x + i;
             let cy = y + j;
             if (cx >= 0 && cx < cols && cy >= 0 && cy < rows) {
-                if (grid[cy][cx] === 1) return true; // Çevrede 1 (Yangın) varsa geçiş yasak
+                if (grid[cy][cx] === 1) return true; // yangınsa geçme
             }
         }
     }
@@ -115,12 +114,11 @@ function checkFireProximity(x, y, radius) {
 function drawFinalPath(node, scale) {
     ctx.save();
     ctx.beginPath();
-    ctx.strokeStyle = "#000080"; // Lacivert
+    ctx.strokeStyle = "#000080";
     ctx.lineWidth = 6;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     
-    // Beyaz dış ışıma (Görünürlük için)
     ctx.shadowColor = "white";
     ctx.shadowBlur = 8;
 

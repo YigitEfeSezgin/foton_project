@@ -95,9 +95,8 @@ function haritayiAnalizEt() {
     let mesafeLimit = 10; // en fazla 10 br uzaklık kabul
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-            if (grid[y][x] === 2) { // Eğer hücre dumansa
+            if (grid[y][x] === 2) { 
                 let alevVarMi = false;
-                // Çevresindeki 10 birimlik alanı tara
                 for (let dy = -mesafeLimit; dy <= mesafeLimit; dy++) {
                     for (let dx = -mesafeLimit; dx <= mesafeLimit; dx++) {
                         let ny = y + dy, nx = x + dx;
@@ -114,7 +113,6 @@ function haritayiAnalizEt() {
     grid = cleanGrid;
 
 
-    // --- 2. ADIM: YANGIN GENİŞLETME (Güvenlik Koridoru - 16 Komşuluk/2 Birim) ---
     let fireTempGrid = JSON.parse(JSON.stringify(grid));
     for (let y = 2; y < rows - 2; y++) {
         for (let x = 2; x < cols - 2; x++) {
@@ -136,7 +134,7 @@ function haritayiAnalizEt() {
             if (grid[y][x] === 3) {
                 for (let dy = -1; dy <= 1; dy++) {
                     for (let dx = -1; dx <= 1; dx++) {
-                        // Yol genişlerken yangın veya dumanın üzerine binme
+                        // birbirlerinin üzerine gwlince
                         if (grid[y + dy][x + dx] !== 1 && grid[y + dy][x + dx] !== 2) {
                             roadTempGrid[y + dy][x + dx] = 3;
                         }
@@ -150,7 +148,7 @@ function haritayiAnalizEt() {
     console.log("Analiz Bitti: Yangın Koridoru (2 birim) ve Yol Genişletme uygulandı.");
     matrisiEkranaCiz(mCtx);
 }
-
+/* renklerin gözüktüğü eski fonksiyon
 function matrisiEkranaCiz(ctx) {
     if (originalImageData) {
         ctx.putImageData(originalImageData, 0, 0);
@@ -183,6 +181,50 @@ function matrisiEkranaCiz(ctx) {
     }
     document.getElementById("status").innerHTML = "<b>Analiz Tamamlandı. Rota seçebilirsiniz.</b>" ;
 }
+*/
+
+function matrisiEkranaCiz(ctx) {
+    if (originalImageData) {
+        ctx.putImageData(originalImageData, 0, 0);
+    } else {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
+    if (!window.tahminAktifMi) {
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                const deger = grid[y][x];
+                ctx.fillStyle = renkSistemi[deger] || "transparent";
+                ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+                ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+
+                ctx.shadowColor = "black";
+                ctx.shadowBlur = 2;
+                ctx.fillStyle = "white";
+                ctx.font = "bold 8px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(deger, x * cellSize + (cellSize / 2), y * cellSize + (cellSize / 2));
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur = 0;
+            }
+        }
+        document.getElementById("status").innerHTML = "<b>Analiz Tamamlandı. Rota seçebilirsiniz.</b>";
+
+    } else {  //tahminse sadece alevler renkler sayılar yok 
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                if (grid[y][x] === 1) { 
+                    ctx.fillStyle = "rgba(255, 0, 0, 0.2)"; 
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+        document.getElementById("status").innerHTML = "<b style='color:#e74c3c;'>Tahmin Aktif: Alevler rüzgar yönünde ilerliyor!</b>";
+    }
+}
+
 
 
 // 
@@ -191,7 +233,7 @@ function tahminiAtesiCiz(ctx) {
 
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-            // Sadece yangın (1) olan hücreleri bul
+            // yangını bul 
             if (grid[y][x] === 1) { 
                 ctx.fillStyle = "rgba(255, 0, 0, 0.5)"; 
                 ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
@@ -205,20 +247,26 @@ function tahminiAtesiCiz(ctx) {
 
 let ruzgarInterval = null; 
 
-// 3 sn de otomatik rüzgar düzenleyici
 async function ruzgariOtomatikGuncelle() {
     const ruzgarKutusu = document.getElementById("ruzgarKutusu");
     if (!ruzgarKutusu) return; 
 
     if (typeof ruzgarVerisiAl === "function") {
-        window.guncelRuzgar = await ruzgarVerisiAl(); 
         
-    
+        let lat = window.secilenLat || 36.78;
+        let lon = window.secilenLon || 31.44;
+        let sehir = window.secilenSehir || "Antalya";
+
+        window.guncelRuzgar = await ruzgarVerisiAl(lat, lon); 
+        
         let aci = window.guncelRuzgar.derece;
         
-        // flexbox ile ok
+        // Kutuya hem şehri hem de dönen oku ekliyoruz
         ruzgarKutusu.innerHTML = `
             <h3>🌬️ Canlı Rüzgar Verisi</h3>
+            <div style="font-size: 13px; color: #a29bfe; margin-bottom: 8px; margin-top: -5px;">
+                📍 <b>Bölge:</b> ${sehir}
+            </div>
             <div id="ruzgarIcerik" style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <b>Hız:</b> ${window.guncelRuzgar.hiz} km/s <br><br>
@@ -243,12 +291,29 @@ async function ruzgariOtomatikGuncelle() {
 
 const inputElement = document.getElementById("imageInput");
 if (inputElement) {
-    inputElement.addEventListener("change", function() {
+    inputElement.addEventListener("change", function(e) {
         originalImageData = null;
-        
         window.mevcutRuzgarHizi = null; 
-        
-        document.getElementById("status").innerText = "Fotoğraf yüklendi. Sensörler aktif...";
+
+        // dosya adına göre yapıyor
+        let dosyaAdi = "";
+        if (e.target.files && e.target.files.length > 0) {
+            dosyaAdi = e.target.files[0].name.toLowerCase();
+        }
+
+        // konum eşleştirme
+        if (dosyaAdi.includes("izmir")) {
+            window.secilenLat = 38.42; window.secilenLon = 27.14; window.secilenSehir = "İzmir / Türkiye";
+        } else if (dosyaAdi.includes("mugla")) {
+            window.secilenLat = 37.21; window.secilenLon = 28.36; window.secilenSehir = "Muğla / Türkiye";
+        } else if (dosyaAdi.includes("canakkale")) {
+            window.secilenLat = 40.15; window.secilenLon = 26.40; window.secilenSehir = "Çanakkale / Türkiye";
+        } else {
+            // varsayılan antalya
+            window.secilenLat = 36.78; window.secilenLon = 31.44; window.secilenSehir = "Antalya (Manavgat)";
+        }
+
+        document.getElementById("status").innerHTML = `<b>${window.secilenSehir}</b> uydusuna bağlanıldı. Sensörler aktif...`;
         
         if (ruzgarInterval) clearInterval(ruzgarInterval); 
         
