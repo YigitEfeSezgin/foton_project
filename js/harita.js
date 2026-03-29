@@ -1,4 +1,4 @@
-// harita.js - Güvenlik Koridoru ve Yol Genişletme Destekli Analiz
+// harita.js- gridere ayıracak olan alan 
 
 let grid = []; 
 let rows, cols;
@@ -7,10 +7,10 @@ let originalImageData = null;
 let tahminAktifMi = false;
 
 const renkSistemi = {
-    3: "rgba(0, 100, 255, 0.4)",  // YOL: Mavi
-    1: "rgba(255, 0, 0, 0.6)",    // YANGIN: Kırmızı
-    0: "rgba(0, 255, 0, 0.3)",    // ORMAN: Yeşil
-    2: "rgba(150, 150, 150, 0.7)" // DUMAN: Gri
+    3: "rgba(0, 100, 255, 0.4)",  // yol:mavi
+    1: "rgba(255, 0, 0, 0.6)",    // yangın:kırmızı
+    0: "rgba(0, 255, 0, 0.3)",    // orman:yeşil
+    2: "rgba(150, 150, 150, 0.7)" // duman:gri
 };
 
 const costMap = {
@@ -40,7 +40,7 @@ function haritayiAnalizEt() {
 
     const imageData = mCtx.getImageData(0, 0, mCanvas.width, mCanvas.height).data;
 
-    // --- 1. ADIM: İLK RENK ANALİZİ (GÜNCELLENMİŞ VE FİLTRELİ) ---
+    // renk ayarları
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
             const pxIndex = ((y * cellSize) * mCanvas.width + (x * cellSize)) * 4;
@@ -48,28 +48,28 @@ function haritayiAnalizEt() {
             const g = imageData[pxIndex + 1];
             const b = imageData[pxIndex + 2];
 
-            // 1. Yangın (1)
+            // kırmızı
             if (r > 180 && g < 100 && b < 100) {
                 grid[y][x] = 1;
             }
-            // 2. Duman (2) - Senin verdiğin 5 özel RGB kodunu baz alan genişletilmiş koridor
+            // duman
             else if (r >= 25 && r <= 120 && g >= 25 && g <= 120 && b >= 30 && b <= 130 && Math.abs(r - g) <= 15) {
                 grid[y][x] = 2; 
             }
-            // 3. Yol (3)
+            // yol
             else if (r > 150 && g > 110 && b > 60 && r > g && g > b) {
                 grid[y][x] = 3;
             }
-            // 4. Orman (0)
+            // orman
             else {
                 grid[y][x] = 0;
             }
         }
     }
 
-    // --- 1.5 ADIM: KONUMSAL TEMİZLİK (SADECE ALEV YAKININI TUT) ---
+    // duman menzil
     let tempGrid = JSON.parse(JSON.stringify(grid));
-    let dumanMenzili = 12; // Alevden en fazla 12 birim uzaklık (Sağdaki toprağı silmek için)
+    let dumanMenzili = 12; // Alevden 12 br uzaklık mac
 
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
@@ -84,16 +84,15 @@ function haritayiAnalizEt() {
                     }
                     if (yakinindaAlevVar) break;
                 }
-                if (!yakinindaAlevVar) tempGrid[y][x] = 0; // Uzaktaki "sahte" dumanları ormana çevir
+                if (!yakinindaAlevVar) tempGrid[y][x] = 0; 
             }
         }
     }
     grid = tempGrid;
 
-    // --- YENİ ADIM: UZAKTAKİ DUMANLARI SİL (Sadece alev yakını kalsın) ---
+    // dumanların hepsini algılamamsı için 
     let cleanGrid = JSON.parse(JSON.stringify(grid));
-    let mesafeLimit = 10; // Alevden en fazla kaç birim uzaktaki dumanı kabul edelim?
-
+    let mesafeLimit = 10; // en fazla 10 br uzaklık kabul
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
             if (grid[y][x] === 2) { // Eğer hücre dumansa
@@ -108,13 +107,12 @@ function haritayiAnalizEt() {
                     }
                     if (alevVarMi) break;
                 }
-                if (!alevVarMi) cleanGrid[y][x] = 0; // Alevden uzaksa sil (Orman yap)
+                if (!alevVarMi) cleanGrid[y][x] = 0; // orman yap
             }
         }
     }
     grid = cleanGrid;
 
-    // --- 2. ADIM: YANGIN GENİŞLETME (Senin mevcut kodun buradan devam etsin) ---
 
     // --- 2. ADIM: YANGIN GENİŞLETME (Güvenlik Koridoru - 16 Komşuluk/2 Birim) ---
     let fireTempGrid = JSON.parse(JSON.stringify(grid));
@@ -131,7 +129,7 @@ function haritayiAnalizEt() {
     }
     grid = fireTempGrid;
 
-    // --- 3. ADIM: YOL GENİŞLETME (8-Komşuluk Dilation) ---
+    // yol büyütme
     let roadTempGrid = JSON.parse(JSON.stringify(grid));
     for (let y = 1; y < rows - 1; y++) {
         for (let x = 1; x < cols - 1; x++) {
@@ -187,9 +185,7 @@ function matrisiEkranaCiz(ctx) {
 }
 
 
-// ==========================================================
-// === YENİ EKLENEN KOD BAŞLANGICI ==========================
-// ==========================================================
+// 
 function tahminiAtesiCiz(ctx) {
     if(!window.tahminAktifMi) return;
 
@@ -197,24 +193,19 @@ function tahminiAtesiCiz(ctx) {
         for (let x = 0; x < cols; x++) {
             // Sadece yangın (1) olan hücreleri bul
             if (grid[y][x] === 1) { 
-                ctx.fillStyle = "rgba(255, 0, 0, 0.5)"; // Yarı saydam (%50) kırmızı
+                ctx.fillStyle = "rgba(255, 0, 0, 0.5)"; 
                 ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
             }
         }
     }
 }
-// ==========================================================
-// === YENİ EKLENEN KOD BİTİŞİ ==============================
-// ==========================================================
 
 
-// === OLAY DİNLEYİCİLER VE CANLI SENSÖR (EN ALT KISIM) ===
 
-let ruzgarInterval = null; // HATA DÜZELTİLDİ: Fazladan eşittir silindi.
 
-// ==========================================================
-// === BİRİNCİ ADIM: OTOMATİK RÜZGAR GÜNCELLEYİCİ (3 SN) ====
-// ==========================================================
+let ruzgarInterval = null; 
+
+// 3 sn de otomatik rüzgar düzenleyici
 async function ruzgariOtomatikGuncelle() {
     const ruzgarKutusu = document.getElementById("ruzgarKutusu");
     if (!ruzgarKutusu) return; 
@@ -222,10 +213,10 @@ async function ruzgariOtomatikGuncelle() {
     if (typeof ruzgarVerisiAl === "function") {
         window.guncelRuzgar = await ruzgarVerisiAl(); 
         
-        // CSS ile döndürmek için rüzgar derecesini alıyoruz
+    
         let aci = window.guncelRuzgar.derece;
         
-        // Kutunun içini Flexbox ile ikiye bölüyoruz: Sol taraf yazılar, sağ taraf dev dönen ok!
+        // flexbox ile ok
         ruzgarKutusu.innerHTML = `
             <h3>🌬️ Canlı Rüzgar Verisi</h3>
             <div id="ruzgarIcerik" style="display: flex; align-items: center; justify-content: space-between;">
@@ -249,13 +240,12 @@ async function ruzgariOtomatikGuncelle() {
     }
 }
 
-// 1. FOTOĞRAF YÜKLENDİĞİNDE SENSÖRÜ UYANDIR
+
 const inputElement = document.getElementById("imageInput");
 if (inputElement) {
     inputElement.addEventListener("change", function() {
         originalImageData = null;
         
-        // YENİ EKLENDİ: Eski rüzgarın hafızasını sil, yeni fotoğrafta 15-30 arasından yeni bir başlangıç yapsın!
         window.mevcutRuzgarHizi = null; 
         
         document.getElementById("status").innerText = "Fotoğraf yüklendi. Sensörler aktif...";
@@ -269,7 +259,7 @@ if (inputElement) {
 
 
 
-// Analiz Butonu 
+// analiz butonu
 const analizBtnRef = document.getElementById("analizBtn");
 if (analizBtnRef) {
     analizBtnRef.addEventListener("click", () => {
@@ -278,7 +268,7 @@ if (analizBtnRef) {
     });
 }
 
-// Tahmin butonuna basıldığını algıla ve şeffaf çizim kilidini aç
+// tahmin butonu ve şeffaf çizim kilidi
 document.addEventListener("click", function(e) {
     if (e.target && (e.target.id === 'tahminBtn' || e.target.innerText === 'TAHMİN')) {
         window.tahminAktifMi = true; 
