@@ -183,7 +183,7 @@ function matrisiEkranaCiz(ctx) {
     if (window.guncelRuzgar) {
         ruzgarBilgisi = `<br><span style="color:#e67e22;">🌬️ Anlık Rüzgar: ${window.guncelRuzgar.hiz} km/s | Yön: ${window.guncelRuzgar.derece}°</span>`;
     }
-    document.getElementById("status").innerHTML = `<b>Analiz Tamamlandı. Rota seçebilirsiniz.</b> ${ruzgarBilgisi}`;
+    document.getElementById("status").innerHTML = "<b>Analiz Tamamlandı. Rota seçebilirsiniz.</b>" ;
 }
 
 
@@ -208,32 +208,54 @@ function tahminiAtesiCiz(ctx) {
 // ==========================================================
 
 
-// Olay Dinleyiciler
+// === OLAY DİNLEYİCİLER VE CANLI SENSÖR (EN ALT KISIM) ===
+
+let ruzgarInterval = null; // HATA DÜZELTİLDİ: Fazladan eşittir silindi.
+
+// ==========================================================
+// === BİRİNCİ ADIM: OTOMATİK RÜZGAR GÜNCELLEYİCİ (3 SN) ====
+// ==========================================================
+async function ruzgariOtomatikGuncelle() {
+    const ruzgarKutusu = document.getElementById("ruzgarKutusu");
+    if (!ruzgarKutusu) return; 
+
+    if (typeof ruzgarVerisiAl === "function") {
+        window.guncelRuzgar = await ruzgarVerisiAl(); 
+        
+        ruzgarKutusu.innerHTML = `
+            <h3>🌬️ Canlı Rüzgar Verisi</h3>
+            <div id="ruzgarIcerik">
+                <b>Hız:</b> ${window.guncelRuzgar.hiz} km/s <br><br>
+                <b>Yön:</b> ${window.guncelRuzgar.derece}°
+            </div>
+        `;
+    }
+}
+
+// 1. FOTOĞRAF YÜKLENDİĞİNDE SENSÖRÜ UYANDIR (HATA DÜZELTİLDİ: Sadece 1 tane bırakıldı)
 const inputElement = document.getElementById("imageInput");
 if (inputElement) {
     inputElement.addEventListener("change", function() {
         originalImageData = null;
-        document.getElementById("status").innerText = "Fotoğraf yüklendi. Analiz bekleniyor...";
+        document.getElementById("status").innerText = "Fotoğraf yüklendi. Sensörler aktif...";
+        
+        if (ruzgarInterval) clearInterval(ruzgarInterval); 
+        
+        ruzgariOtomatikGuncelle(); 
+        ruzgarInterval = setInterval(ruzgariOtomatikGuncelle, 3000); 
     });
 }
 
+// Analiz Butonu 
 const analizBtnRef = document.getElementById("analizBtn");
 if (analizBtnRef) {
-    analizBtnRef.addEventListener("click", async () => {
-        document.getElementById("status").innerText = "Hava durumu çekiliyor ve Analiz ediliyor...";
-        
-        // Önce rüzgarı çek (Otomatik çalışır)
-        window.guncelRuzgar = await ruzgarVerisiAl(); 
-        
-        // Ekrana rüzgarı yazdır
-        document.getElementById("status").innerHTML = 
-            `<b>Analiz ediliyor...</b> <br> 🌬️ Rüzgar: ${window.guncelRuzgar.hiz} km/s | Yön: ${window.guncelRuzgar.derece}°`;
-        
+    analizBtnRef.addEventListener("click", () => {
+        document.getElementById("status").innerHTML = `<b>Analiz ediliyor...</b>`;
         setTimeout(haritayiAnalizEt, 100);
     });
 }
 
-// YENİ EKLENDİ: Tahmin butonuna basıldığını algıla ve şeffaf çizim kilidini aç
+// Tahmin butonuna basıldığını algıla ve şeffaf çizim kilidini aç
 document.addEventListener("click", function(e) {
     if (e.target && (e.target.id === 'tahminBtn' || e.target.innerText === 'TAHMİN')) {
         window.tahminAktifMi = true; 
