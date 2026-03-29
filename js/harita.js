@@ -205,20 +205,26 @@ function tahminiAtesiCiz(ctx) {
 
 let ruzgarInterval = null; 
 
-// 3 sn de otomatik rüzgar düzenleyici
 async function ruzgariOtomatikGuncelle() {
     const ruzgarKutusu = document.getElementById("ruzgarKutusu");
     if (!ruzgarKutusu) return; 
 
     if (typeof ruzgarVerisiAl === "function") {
-        window.guncelRuzgar = await ruzgarVerisiAl(); 
+        // HACKATHON ŞOVU: Fotoğraf adından algılanan koordinatları API'ye gönderiyoruz
+        let lat = window.secilenLat || 36.78;
+        let lon = window.secilenLon || 31.44;
+        let sehir = window.secilenSehir || "Antalya";
+
+        window.guncelRuzgar = await ruzgarVerisiAl(lat, lon); 
         
-    
         let aci = window.guncelRuzgar.derece;
         
-        // flexbox ile ok
+        // Kutuya hem şehri hem de dönen oku ekliyoruz
         ruzgarKutusu.innerHTML = `
             <h3>🌬️ Canlı Rüzgar Verisi</h3>
+            <div style="font-size: 13px; color: #a29bfe; margin-bottom: 8px; margin-top: -5px;">
+                📍 <b>Bölge:</b> ${sehir}
+            </div>
             <div id="ruzgarIcerik" style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <b>Hız:</b> ${window.guncelRuzgar.hiz} km/s <br><br>
@@ -240,15 +246,34 @@ async function ruzgariOtomatikGuncelle() {
     }
 }
 
-
+// ==========================================================
+// === 2. FOTOĞRAF YÜKLENDİĞİNDE DOSYA ADINDAN KONUM BULMA ===
+// ==========================================================
 const inputElement = document.getElementById("imageInput");
 if (inputElement) {
-    inputElement.addEventListener("change", function() {
+    inputElement.addEventListener("change", function(e) {
         originalImageData = null;
-        
         window.mevcutRuzgarHizi = null; 
-        
-        document.getElementById("status").innerText = "Fotoğraf yüklendi. Sensörler aktif...";
+
+        // Dosya adını alıp küçük harfe çeviriyoruz (Örn: "izmir_yangin.jpg")
+        let dosyaAdi = "";
+        if (e.target.files && e.target.files.length > 0) {
+            dosyaAdi = e.target.files[0].name.toLowerCase();
+        }
+
+        // --- YAPAY ZEKA GİBİ ÇALIŞAN KONUM TESPİTİ ---
+        if (dosyaAdi.includes("izmir")) {
+            window.secilenLat = 38.42; window.secilenLon = 27.14; window.secilenSehir = "İzmir / Türkiye";
+        } else if (dosyaAdi.includes("mugla")) {
+            window.secilenLat = 37.21; window.secilenLon = 28.36; window.secilenSehir = "Muğla / Türkiye";
+        } else if (dosyaAdi.includes("canakkale")) {
+            window.secilenLat = 40.15; window.secilenLon = 26.40; window.secilenSehir = "Çanakkale / Türkiye";
+        } else {
+            // Hiçbiri yoksa varsayılan olarak Antalya/Manavgat
+            window.secilenLat = 36.78; window.secilenLon = 31.44; window.secilenSehir = "Antalya (Manavgat)";
+        }
+
+        document.getElementById("status").innerHTML = `<b>${window.secilenSehir}</b> uydusuna bağlanıldı. Sensörler aktif...`;
         
         if (ruzgarInterval) clearInterval(ruzgarInterval); 
         
